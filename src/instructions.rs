@@ -8,7 +8,7 @@ pub struct Instruction<'a> {
 }
 
 impl Instruction<'_> {
-    pub const SET: [Instruction<'static>; 32] = [
+    pub const SET: [Instruction<'static>; 48] = [
         Instruction {
             //0x00
             disassembly: "NOP",
@@ -232,6 +232,118 @@ impl Instruction<'_> {
             op_len: 1,
             clock_cycles: 1,
             execute: rra,
+        },
+        Instruction {
+            //0x20
+            disassembly: "JR NZ s8",
+            op_len: 2,
+            clock_cycles: 3,
+            execute: jr_nz_s8,
+        },
+        Instruction {
+            //0x21
+            disassembly: "LD HL d16",
+            op_len: 3,
+            clock_cycles: 3,
+            execute: load_imm_hl,
+        },
+        Instruction {
+            //0x22
+            disassembly: "LD (HL++) A",
+            op_len: 1,
+            clock_cycles: 2,
+            execute: load_val_hl_ptr,
+        },
+        Instruction {
+            //0x23
+            disassembly: "INC HL",
+            op_len: 1,
+            clock_cycles: 2,
+            execute: inc_hl,
+        },
+        Instruction {
+            //0x24
+            disassembly: "INC H",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: inc_h,
+        },
+        Instruction {
+            //0x25
+            disassembly: "DEC H",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: dec_h,
+        },
+        Instruction {
+            //x026
+            disassembly: "LD H d8",
+            op_len: 2,
+            clock_cycles: 2,
+            execute: load_imm_h,
+        },
+        Instruction {
+            //0x27
+            disassembly: "DAA",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: daa,
+        },
+        Instruction {
+            //0x28
+            disassembly: "JR Z s8",
+            op_len: 2,
+            clock_cycles: 3,
+            execute: jr_z_s8,
+        },
+        Instruction {
+            //0x29
+            disassembly: "ADD HL HL",
+            op_len: 1,
+            clock_cycles: 2,
+            execute: add_hl_to_hl,
+        },
+        Instruction {
+            //0x2a
+            disassembly: "LD A (HL++)",
+            op_len: 1,
+            clock_cycles: 2,
+            execute: load_hl_ptr_into_a,
+        },
+        Instruction {
+            //0x2b
+            disassembly: "DEC HL",
+            op_len: 1,
+            clock_cycles: 2,
+            execute: dec_hl,
+        },
+        Instruction {
+            //0x2c
+            disassembly: "INC L",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: inc_l,
+        },
+        Instruction {
+            //0x2d
+            disassembly: "DEC L",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: dec_l,
+        },
+        Instruction {
+            //0x2e
+            disassembly: "LD L d8",
+            op_len: 2,
+            clock_cycles: 2,
+            execute: load_imm_l,
+        },
+        Instruction {
+            //0x2f
+            disassembly: "CPL",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: cpl,
         },
     ];
 }
@@ -570,3 +682,165 @@ fn rra(cpu: &mut cpu::CPU) {
 // ======================================================
 // 0x2X Instructions
 // ======================================================
+fn jr_nz_s8(cpu: &mut cpu::CPU) {
+    // jump s8 bytes from pc if z flag is on
+    if cpu.extract_flag('z') == false {
+        jr_s8(cpu);
+    }
+}
+
+fn load_imm_hl(cpu: &mut cpu::CPU) {
+    // load 16 bits data into HL register
+    let n1 = cpu.fetch_byte(cpu.pc);
+    let n2 = cpu.fetch_byte(cpu.pc + 1);
+    cpu.hl.low = n1;
+    cpu.hl.high = n2;
+}
+
+fn load_val_hl_ptr(cpu: &mut cpu::CPU) {
+    // load 8 bit data into address pointed by HL and increments HL
+    let val = cpu.fetch_byte(cpu.pc);
+    cpu.set_byte(cpu.hl.get_combined(), val);
+    inc_hl(cpu);
+}
+
+fn inc_hl(cpu: &mut cpu::CPU) {
+    // increment 16 bits registry HL ; need to check for carry from low to high
+    if cpu.hl.low == 255 {
+        cpu.hl.high += 1;
+    }
+    cpu.hl.low += 1;
+}
+
+fn inc_h(cpu: &mut cpu::CPU) {
+    // increment 8 bits register H
+    cpu.hl.high += 1;
+    if cpu.hl.high == 0 {
+        cpu.set_flag('z'); // zero flag
+    }
+    if cpu.hl.high & 0b1111 == 0 {
+        // if the first 4 bytes resulted in a carry
+        cpu.set_flag('h'); // set half carry flag
+    }
+    cpu.set_flag('n'); // operation was addition
+}
+
+fn dec_h(cpu: &mut cpu::CPU) {
+    // decrement 8 bits register H
+    if cpu.hl.high & 0b1111 == 0 {
+        cpu.set_flag('h');
+    }
+    cpu.hl.high -= 1;
+    if cpu.hl.high == 0 {
+        cpu.set_flag('z');
+    }
+    cpu.clear_flag('n');
+}
+
+fn load_imm_h(cpu: &mut cpu::CPU) {
+    // load immediate value into 8 bits register H
+    let op = cpu.fetch_byte(cpu.pc);
+    cpu.hl.high = op;
+}
+
+fn daa(cpu: &mut cpu::CPU) {
+    // bdc things
+    if cpu.extract_flag('n') == false {
+        if cpu.extract_flag('c') == true || cpu.af.high > 0x99 {
+            cpu.af.high += 0x60;
+            cpu.set_flag('c');
+        }
+        if cpu.extract_flag('h') == true || (cpu.af.high & 0x0f) > 0x09 {
+            cpu.af.high += 0x6;
+        }
+    } else {
+        if cpu.extract_flag('c') == true {
+            cpu.af.high -= 0x60;
+        }
+        if cpu.extract_flag('h') == true {
+            cpu.af.high -= 0x6;
+        }
+    }
+
+    if cpu.af.high == 0 {
+        cpu.set_flag('z');
+    } else {
+        cpu.clear_flag('z');
+    }
+    cpu.clear_flag('h');
+}
+
+fn jr_z_s8(cpu: &mut cpu::CPU) {
+    // jump relative of s8 if z flag is true
+    if cpu.extract_flag('z') == true {
+        jr_s8(cpu);
+    }
+}
+
+fn add_hl_to_hl(cpu: &mut cpu::CPU) {
+    // add HL to HL and store into HL
+    let hl = cpu.hl.get_combined();
+    let result = hl + hl;
+    if result == 0 {
+        cpu.set_flag('c');
+    }
+    if hl & 0xFF + hl & 0xFF > 255 {
+        // checking half carry
+        cpu.set_flag('h');
+    }
+    cpu.hl.set_word(result);
+    cpu.set_flag('n');
+}
+
+fn load_hl_ptr_into_a(cpu: &mut cpu::CPU) {
+    // load value pointed by HL into A and increment HL
+    let address = cpu.hl.get_combined();
+    cpu.af.high = cpu.fetch_byte(address);
+    inc_hl(cpu);
+}
+
+fn dec_hl(cpu: &mut cpu::CPU) {
+    // decrement 16 bits register HL
+    if cpu.hl.low == 0 {
+        cpu.hl.high -= 1;
+    }
+    cpu.hl.low -= 1;
+}
+
+fn inc_l(cpu: &mut cpu::CPU) {
+    // increment L register
+    cpu.hl.low += 1;
+    if cpu.hl.low == 0 {
+        cpu.set_flag('z'); // zero flag
+    }
+    if cpu.hl.low & 0b1111 == 0 {
+        // if the first 4 bytes resulted in a carry
+        cpu.set_flag('h'); // set half carry flag
+    }
+    cpu.set_flag('n'); // operation was addition
+}
+
+fn dec_l(cpu: &mut cpu::CPU) {
+    // decrement 8 bits register L
+    if cpu.hl.low & 0b1111 == 0 {
+        cpu.set_flag('h');
+    }
+    cpu.hl.low -= 1;
+    if cpu.hl.low == 0 {
+        cpu.set_flag('z');
+    }
+    cpu.clear_flag('n');
+}
+
+fn load_imm_l(cpu: &mut cpu::CPU) {
+    // load immediate value into 8 bits register L
+    let op = cpu.fetch_byte(cpu.pc);
+    cpu.hl.low = op;
+}
+
+fn cpl(cpu: &mut cpu::CPU) {
+    // take comeplent of A
+    cpu.af.high = !cpu.af.high;
+    cpu.set_flag('h');
+    cpu.set_flag('n');
+}
