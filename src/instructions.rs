@@ -8,7 +8,7 @@ pub struct Instruction<'a> {
 }
 
 impl Instruction<'_> {
-    pub const SET: [Instruction<'static>; 48] = [
+    pub const SET: [Instruction<'static>; 112] = [
         Instruction {
             //0x00
             disassembly: "NOP",
@@ -345,7 +345,460 @@ impl Instruction<'_> {
             clock_cycles: 1,
             execute: cpl,
         },
+        Instruction {
+            //0x30
+            disassembly: "JR NC s8",
+            op_len: 2,
+            clock_cycles: 3,
+            execute: jr_nc_s8,
+        },
+        Instruction {
+            //0x31
+            disassembly: "LD SP d16",
+            op_len: 3,
+            clock_cycles: 3,
+            execute: load_imm_sp,
+        },
+        Instruction {
+            //0x32
+            disassembly: "LD (HL--) A",
+            op_len: 1,
+            clock_cycles: 2,
+            execute: load_val_hl_ptr_dec,
+        },
+        Instruction {
+            //0x33
+            disassembly: "INC SP",
+            op_len: 1,
+            clock_cycles: 2,
+            execute: inc_sp,
+        },
+        Instruction {
+            //0x34
+            disassembly: "INC (HL)",
+            op_len: 1,
+            clock_cycles: 3,
+            execute: inc_hl_ptr,
+        },
+        Instruction {
+            //0x35
+            disassembly: "DEC (HL)",
+            op_len: 1,
+            clock_cycles: 3,
+            execute: dec_hl_ptr,
+        },
+        Instruction {
+            //0x36
+            disassembly: "LD (HL) d8",
+            op_len: 2,
+            clock_cycles: 3,
+            execute: load_d8_into_hl_ptr,
+        },
+        Instruction {
+            //0x37
+            disassembly: "SCF",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: set_carry_flag,
+        },
+        Instruction {
+            //0x38
+            disassembly: "JR C s8",
+            op_len: 2,
+            clock_cycles: 3,
+            execute: jr_c_s8,
+        },
+        Instruction {
+            //0x39
+            disassembly: "ADD HL SP",
+            op_len: 1,
+            clock_cycles: 2,
+            execute: add_sp_to_hl,
+        },
+        Instruction {
+            //0x3a
+            disassembly: "LD A (HL--)",
+            op_len: 1,
+            clock_cycles: 2,
+            execute: load_hl_ptr_into_a_dec,
+        },
+        Instruction {
+            //0x3b
+            disassembly: "DEC SP",
+            op_len: 1,
+            clock_cycles: 2,
+            execute: dec_sp,
+        },
+        Instruction {
+            //0x3c
+            disassembly: "INC A",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: inc_a,
+        },
+        Instruction {
+            //0x3d
+            disassembly: "DEC A",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: dec_a,
+        },
+        Instruction {
+            //0x3e
+            disassembly: "LD A d8",
+            op_len: 2,
+            clock_cycles: 2,
+            execute: load_imm_a,
+        },
+        Instruction {
+            //0x3f
+            disassembly: "CCF",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: ccf,
+        },
+        Instruction {
+            //0x40
+            disassembly: "LD B B",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: ld_b_b,
+        },
+        Instruction {
+            //0x41
+            disassembly: "LD B C",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: ld_b_c,
+        },
+        Instruction {
+            //0x42
+            disassembly: "LD B D",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: ld_b_d,
+        },
+        Instruction {
+            //0x43
+            disassembly: "LD B E",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: ld_b_e,
+        },
+        Instruction {
+            //0x44
+            disassembly: "LD B H",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: ld_b_h,
+        },
+        Instruction {
+            //0x45
+            disassembly: "LD B L",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: ld_b_l,
+        },
+        Instruction {
+            //0x46
+            disassembly: "LD B (HL)",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: ld_b_hl_ptr,
+        },
+        Instruction {
+            //0x47
+            disassembly: "LD B A",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: ld_b_a,
+        },
+        Instruction {
+            //0x48
+            disassembly: "LD C B",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: ld_c_b,
+        },
+        Instruction {
+            //0x49
+            disassembly: "LD C C",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: ld_c_c,
+        },
+        Instruction {
+            //0x4a
+            disassembly: "LD C D",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: ld_c_d,
+        },
+        Instruction {
+            //0x4b
+            disassembly: "LD C E",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: ld_c_e,
+        },
+        Instruction {
+            //0x4c
+            disassembly: "LD C H",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: ld_c_h,
+        },
+        Instruction {
+            //0x4d
+            disassembly: "LD C L",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: ld_c_l,
+        },
+        Instruction {
+            //0x4e
+            disassembly: "LD C (HL)",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: ld_c_hl_ptr,
+        },
+        Instruction {
+            //0x4f
+            disassembly: "LD C A",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: ld_c_a,
+        },
+        Instruction {
+            //0x50
+            disassembly: "LD D B",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: ld_d_b,
+        },
+        Instruction {
+            //0x51
+            disassembly: "LD D C",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: ld_d_c,
+        },
+        Instruction {
+            //0x52
+            disassembly: "LD D D",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: ld_d_d,
+        },
+        Instruction {
+            //0x53
+            disassembly: "LD D E",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: ld_d_e,
+        },
+        Instruction {
+            //0x54
+            disassembly: "LD D H",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: ld_d_h,
+        },
+        Instruction {
+            //0x55
+            disassembly: "LD D L",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: ld_d_l,
+        },
+        Instruction {
+            //0x56
+            disassembly: "LD D (HL)",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: ld_d_hl_ptr,
+        },
+        Instruction {
+            //0x57
+            disassembly: "LD D A",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: ld_d_a,
+        },
+        Instruction {
+            //0x58
+            disassembly: "LD E B",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: ld_e_b,
+        },
+        Instruction {
+            //0x59
+            disassembly: "LD E C",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: ld_e_c,
+        },
+        Instruction {
+            //0x5a
+            disassembly: "LD E D",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: ld_e_d,
+        },
+        Instruction {
+            //0x5b
+            disassembly: "LD E E",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: ld_e_e,
+        },
+        Instruction {
+            //0x5c
+            disassembly: "LD E H",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: ld_e_h,
+        },
+        Instruction {
+            //0x5d
+            disassembly: "LD E L",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: ld_e_l,
+        },
+        Instruction {
+            //0x5e
+            disassembly: "LD E (HL)",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: ld_e_hl_ptr,
+        },
+        Instruction {
+            //0x5f
+            disassembly: "LD E A",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: ld_e_a,
+        },
+        Instruction {
+            //0x60
+            disassembly: "LD H B",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: ld_h_b,
+        },
+        Instruction {
+            //0x61
+            disassembly: "LD H C",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: ld_h_c,
+        },
+        Instruction {
+            //0x62
+            disassembly: "LD H D",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: ld_h_d,
+        },
+        Instruction {
+            //0x63
+            disassembly: "LD H E",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: ld_h_e,
+        },
+        Instruction {
+            //0x64
+            disassembly: "LD H H",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: ld_h_h,
+        },
+        Instruction {
+            //0x65
+            disassembly: "LD H L",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: ld_h_l,
+        },
+        Instruction {
+            //0x66
+            disassembly: "LD H (HL)",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: ld_h_hl_ptr,
+        },
+        Instruction {
+            //0x67
+            disassembly: "LD H A",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: ld_h_a,
+        },
+        Instruction {
+            //0x68
+            disassembly: "LD L B",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: ld_l_b,
+        },
+        Instruction {
+            //0x69
+            disassembly: "LD L C",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: ld_l_c,
+        },
+        Instruction {
+            //0x6a
+            disassembly: "LD L D",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: ld_l_d,
+        },
+        Instruction {
+            //0x6b
+            disassembly: "LD L E",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: ld_l_e,
+        },
+        Instruction {
+            //0x6c
+            disassembly: "LD L H",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: ld_l_h,
+        },
+        Instruction {
+            //0x6d
+            disassembly: "LD L L",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: ld_l_l,
+        },
+        Instruction {
+            //0x6e
+            disassembly: "LD L (HL)",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: ld_l_hl_ptr,
+        },
+        Instruction {
+            //0x6f
+            disassembly: "LD L A",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: ld_l_a,
+        },
     ];
+}
+
+fn unimplemented_opcode(cpu: &mut cpu::CPU) {
+    // for opcodes that do nothing
+    panic!("Unimplemetend Op code reached ! {}", cpu.fetch_byte(cpu.pc - 1));
 }
 
 // Instructions
@@ -843,4 +1296,341 @@ fn cpl(cpu: &mut cpu::CPU) {
     cpu.af.high = !cpu.af.high;
     cpu.set_flag('h');
     cpu.set_flag('n');
+}
+
+// ======================================================
+// 0x3X Instructions
+// ======================================================
+fn jr_nc_s8(cpu: &mut cpu::CPU) {
+    // jump s8 bytes if carry flag is 0
+    if cpu.extract_flag('c') == false {
+        jr_s8(cpu);
+    }
+}
+
+fn load_imm_sp(cpu: &mut cpu::CPU) {
+    // load d16 value into SP register
+    let n1 = cpu.fetch_byte(cpu.pc);
+    let n2 = cpu.fetch_byte(cpu.pc + 1);
+    cpu.sp = ((n2 as u16) << 8) + n2 as u16;
+}
+
+fn load_val_hl_ptr_dec(cpu: &mut cpu::CPU) {
+    // load 8 bit data into address pointed by HL and decrements HL
+    let val = cpu.fetch_byte(cpu.pc);
+    cpu.set_byte(cpu.hl.get_combined(), val);
+    dec_hl(cpu);
+}
+
+fn inc_sp(cpu: &mut cpu::CPU) {
+    // increments SP
+    cpu.pc += 1;
+}
+
+fn inc_hl_ptr(cpu: &mut cpu::CPU) {
+    // increment value at memory pointed by HL register
+    let adr = cpu.hl.get_combined();
+    let val = cpu.fetch_byte(adr);
+    cpu.set_byte(adr, val + 1);
+    if val + 1 == 0 {
+        cpu.set_flag('z');
+    } else {
+        cpu.clear_flag('z');
+    }
+    if (val + 1) & 0b1111 == 0 {
+        // if the first 4 bytes resulted in a carry
+        cpu.set_flag('h'); // set half carry flag
+    } else {
+        cpu.clear_flag('h');
+    }
+    cpu.clear_flag('n');
+}
+
+fn dec_hl_ptr(cpu: &mut cpu::CPU) {
+    // decrement value at memory pointed by HL register
+    let adr = cpu.hl.get_combined();
+    let val = cpu.fetch_byte(adr);
+    cpu.set_byte(adr, val - 1);
+    if val - 1 == 0 {
+        cpu.set_flag('z');
+    } else {
+        cpu.clear_flag('z');
+    }
+    if val & 0b1111 == 0 {
+        // if the first 4 bytes resulted in a carry
+        cpu.set_flag('h'); // set half carry flag
+    } else {
+        cpu.clear_flag('h');
+    }
+    cpu.set_flag('n');
+}
+
+fn load_d8_into_hl_ptr(cpu: &mut cpu::CPU) {
+    // load d8 value into memory pointed by HL register
+    let op = cpu.fetch_byte(cpu.pc);
+    cpu.set_byte(cpu.hl.get_combined(), op);
+}
+
+fn set_carry_flag(cpu: &mut cpu::CPU) {
+    // set carry flag
+    cpu.set_flag('c');
+}
+
+fn jr_c_s8(cpu: &mut cpu::CPU) {
+    // jump if carry flag is set
+    if cpu.extract_flag('c') == true {
+        jr_s8(cpu);
+    }
+}
+
+fn add_sp_to_hl(cpu: &mut cpu::CPU) {
+    // add SP to HL register
+    let hl = cpu.hl.get_combined();
+    let result = cpu.sp + hl;
+    cpu.update_flag('c', result == 0);
+    cpu.update_flag('h', cpu.sp & 0xFF + hl & 0xFF > 255);
+    cpu.sp = result;
+    cpu.set_flag('n');
+}
+
+fn load_hl_ptr_into_a_dec(cpu: &mut cpu::CPU) {
+    // load value pointed by HL register into A then decrement HL
+    let address = cpu.hl.get_combined();
+    cpu.af.high = cpu.fetch_byte(address);
+    dec_hl(cpu);
+}
+
+fn dec_sp(cpu: &mut cpu::CPU) {
+    // dec SP register
+    cpu.sp -= 1;
+}
+
+fn inc_a(cpu: &mut cpu::CPU) {
+    // increment A
+    cpu.clear_flag('n');
+    cpu.af.high += 1;
+    cpu.update_flag('h', cpu.af.high & 0b1111 == 0);
+    cpu.update_flag('z', cpu.af.high == 0);
+}
+
+fn dec_a(cpu: &mut cpu::CPU) {
+    // decrement A
+    cpu.set_flag('n');
+    cpu.af.high -= 1;
+    cpu.update_flag('h', cpu.af.high & 0b1111 == 0);
+    cpu.update_flag('z', cpu.af.high == 0);
+}
+
+fn load_imm_a(cpu: &mut cpu::CPU) {
+    // load d8 value into A register
+    let op = cpu.fetch_byte(cpu.pc);
+    cpu.af.high = op;
+}
+
+fn ccf(cpu: &mut cpu::CPU) {
+    // flip carry flag
+    cpu.update_flag('c', !cpu.extract_flag('c'));
+    cpu.clear_flag('h');
+    cpu.clear_flag('n');
+}
+
+// ======================================================
+// 0x4X Instructions
+// ======================================================
+fn ld_b_b(cpu: &mut cpu::CPU) {
+    nop(cpu);
+}
+
+fn ld_b_c(cpu: &mut cpu::CPU) {
+    cpu.bc.high = cpu.bc.low;
+}
+
+fn ld_b_d(cpu: &mut cpu::CPU) {
+    cpu.bc.high = cpu.de.high;
+}
+
+fn ld_b_e(cpu: &mut cpu::CPU) {
+    cpu.bc.high = cpu.de.low;
+}
+
+fn ld_b_h(cpu: &mut cpu::CPU) {
+    cpu.bc.high = cpu.hl.high;
+}
+
+fn ld_b_l(cpu: &mut cpu::CPU) {
+    cpu.bc.high = cpu.hl.low;
+}
+
+fn ld_b_hl_ptr(cpu: &mut cpu::CPU) {
+    cpu.bc.high = cpu.fetch_byte(cpu.hl.get_combined());
+}
+
+fn ld_b_a(cpu: &mut cpu::CPU) {
+    cpu.bc.high = cpu.af.high;
+}
+
+fn ld_c_b(cpu: &mut cpu::CPU) {
+    cpu.bc.low = cpu.bc.high;
+}
+
+fn ld_c_c(cpu: &mut cpu::CPU) {
+    nop(cpu);
+}
+
+fn ld_c_d(cpu: &mut cpu::CPU) {
+    cpu.bc.low = cpu.de.high;
+}
+
+fn ld_c_e(cpu: &mut cpu::CPU) {
+    cpu.bc.low = cpu.de.low;
+}
+
+fn ld_c_h(cpu: &mut cpu::CPU) {
+    cpu.bc.low = cpu.hl.high;
+}
+
+fn ld_c_l(cpu: &mut cpu::CPU) {
+    cpu.bc.low = cpu.hl.low;
+}
+
+fn ld_c_hl_ptr(cpu: &mut cpu::CPU) {
+    cpu.bc.low = cpu.fetch_byte(cpu.hl.get_combined());
+}
+
+fn ld_c_a(cpu: &mut cpu::CPU) {
+    cpu.bc.low = cpu.af.high;
+}
+
+// ======================================================
+// 0x5X Instructions
+// ======================================================
+fn ld_d_b(cpu: &mut cpu::CPU) {
+    cpu.de.high = cpu.bc.high;
+}
+
+fn ld_d_c(cpu: &mut cpu::CPU) {
+    cpu.de.high = cpu.bc.low;
+}
+
+fn ld_d_d(cpu: &mut cpu::CPU) {
+    nop(cpu);
+}
+
+fn ld_d_e(cpu: &mut cpu::CPU) {
+    cpu.de.high = cpu.de.low;
+}
+
+fn ld_d_h(cpu: &mut cpu::CPU) {
+    cpu.de.high = cpu.hl.high;
+}
+
+fn ld_d_l(cpu: &mut cpu::CPU) {
+    cpu.de.high = cpu.hl.low;
+}
+
+fn ld_d_hl_ptr(cpu: &mut cpu::CPU) {
+    cpu.de.high = cpu.fetch_byte(cpu.hl.get_combined());
+}
+
+fn ld_d_a(cpu: &mut cpu::CPU) {
+    cpu.de.high = cpu.af.high;
+}
+
+fn ld_e_b(cpu: &mut cpu::CPU) {
+    cpu.de.low = cpu.bc.high;
+}
+
+fn ld_e_c(cpu: &mut cpu::CPU) {
+    cpu.de.low = cpu.bc.low;
+}
+
+fn ld_e_d(cpu: &mut cpu::CPU) {
+    cpu.de.low = cpu.de.high;
+}
+
+fn ld_e_e(cpu: &mut cpu::CPU) {
+    nop(cpu);
+}
+
+fn ld_e_h(cpu: &mut cpu::CPU) {
+    cpu.de.low = cpu.hl.high;
+}
+
+fn ld_e_l(cpu: &mut cpu::CPU) {
+    cpu.de.low = cpu.hl.low;
+}
+
+fn ld_e_hl_ptr(cpu: &mut cpu::CPU) {
+    cpu.de.low = cpu.fetch_byte(cpu.hl.get_combined());
+}
+
+fn ld_e_a(cpu: &mut cpu::CPU) {
+    cpu.de.low = cpu.af.high;
+}
+
+// ======================================================
+// 0x6X Instructions
+// ======================================================
+fn ld_h_b(cpu: &mut cpu::CPU) {
+    cpu.hl.high = cpu.bc.high;
+}
+
+fn ld_h_c(cpu: &mut cpu::CPU) {
+    cpu.hl.high = cpu.bc.low;
+}
+
+fn ld_h_d(cpu: &mut cpu::CPU) {
+    cpu.hl.high = cpu.de.high;
+}
+
+fn ld_h_e(cpu: &mut cpu::CPU) {
+    cpu.hl.high = cpu.de.low;
+}
+
+fn ld_h_h(cpu: &mut cpu::CPU) {
+    nop(cpu);
+}
+
+fn ld_h_l(cpu: &mut cpu::CPU) {
+    cpu.hl.high = cpu.hl.low;
+}
+
+fn ld_h_hl_ptr(cpu: &mut cpu::CPU) {
+    cpu.hl.high = cpu.fetch_byte(cpu.hl.get_combined());
+}
+
+fn ld_h_a(cpu: &mut cpu::CPU) {
+    cpu.hl.high = cpu.af.high;
+}
+
+fn ld_l_b(cpu: &mut cpu::CPU) {
+    cpu.hl.low = cpu.bc.high;
+}
+
+fn ld_l_c(cpu: &mut cpu::CPU) {
+    cpu.hl.low = cpu.bc.low;
+}
+
+fn ld_l_d(cpu: &mut cpu::CPU) {
+    cpu.hl.low = cpu.de.high;
+}
+
+fn ld_l_e(cpu: &mut cpu::CPU) {
+    cpu.hl.low = cpu.de.low;
+}
+
+fn ld_l_h(cpu: &mut cpu::CPU) {
+    cpu.hl.low = cpu.hl.high;
+}
+
+fn ld_l_l(cpu: &mut cpu::CPU) {
+    nop(cpu);
+}
+
+fn ld_l_hl_ptr(cpu: &mut cpu::CPU) {
+    cpu.hl.low = cpu.fetch_byte(cpu.hl.get_combined());
+}
+
+fn ld_l_a(cpu: &mut cpu::CPU) {
+    cpu.hl.low = cpu.af.high;
 }

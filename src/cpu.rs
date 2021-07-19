@@ -98,6 +98,14 @@ impl CPU {
         };
     }
 
+    pub fn update_flag(&mut self, c: char, val: bool) {
+        if val == true {
+            self.set_flag(c);
+        } else {
+            self.clear_flag(c);
+        }
+    }
+
     fn execute_instruction(&mut self) {
         // fetch instruction byte on bus based on pc register
         let op = self.bus.fetch_byte(self.pc);
