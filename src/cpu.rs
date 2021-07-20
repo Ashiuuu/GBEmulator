@@ -12,7 +12,7 @@ impl Register {
     }
 
     pub fn get_combined(&self) -> u16 {
-        (self.high as u16) << 8 + self.low
+        ((self.high as u16) << 8) + (self.low as u16)
     }
 
     pub fn set_low_word(&mut self, data: u16) {
@@ -113,7 +113,7 @@ impl CPU {
         let op = self.bus.fetch_byte(self.pc);
         self.pc += 1;
         let current_instruction = &instructions::Instruction::SET[op as usize];
-        println!("[*] {}", current_instruction.disassembly);
+        //println!("[*] {}", current_instruction.disassembly);
         // identify instruction and execute it
         let previous_pc = self.pc;
         (current_instruction.execute)(self);
