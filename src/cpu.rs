@@ -38,6 +38,7 @@ pub struct CPU {
     pub pc: u16,
     clock_cycles_to_go: u8,
     pub stopped: bool,
+    pub halted: bool,
     bus: bus::Bus,
 }
 
@@ -52,6 +53,7 @@ impl CPU {
             pc: 0x100,
             clock_cycles_to_go: 0,
             stopped: false,
+            halted: false,
             bus: bus::Bus::new_bus(filename),
         }
     }

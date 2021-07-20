@@ -8,7 +8,7 @@ pub struct Instruction<'a> {
 }
 
 impl Instruction<'_> {
-    pub const SET: [Instruction<'static>; 112] = [
+    pub const SET: [Instruction<'static>; 176] = [
         Instruction {
             //0x00
             disassembly: "NOP",
@@ -793,6 +793,454 @@ impl Instruction<'_> {
             clock_cycles: 1,
             execute: ld_l_a,
         },
+        Instruction {
+            //0x70
+            disassembly: "LD (HL) B",
+            op_len: 1,
+            clock_cycles: 2,
+            execute: load_b_into_hl_ptr,
+        },
+        Instruction {
+            //0x71
+            disassembly: "LD (HL) C",
+            op_len: 1,
+            clock_cycles: 2,
+            execute: load_c_into_hl_ptr,
+        },
+        Instruction {
+            //0x72
+            disassembly: "LD (HL) D",
+            op_len: 1,
+            clock_cycles: 2,
+            execute: load_d_into_hl_ptr,
+        },
+        Instruction {
+            //0x73
+            disassembly: "LD (HL) E",
+            op_len: 1,
+            clock_cycles: 2,
+            execute: load_e_into_hl_ptr,
+        },
+        Instruction {
+            //0x74
+            disassembly: "LD (HL) H",
+            op_len: 1,
+            clock_cycles: 2,
+            execute: load_h_into_hl_ptr,
+        },
+        Instruction {
+            //0x75
+            disassembly: "LD (HL) L",
+            op_len: 1,
+            clock_cycles: 2,
+            execute: load_l_into_hl_ptr,
+        },
+        Instruction {
+            //0x76
+            disassembly: "HALT",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: halt,
+        },
+        Instruction {
+            //0x77
+            disassembly: "LD (HL) A",
+            op_len: 1,
+            clock_cycles: 2,
+            execute: load_a_into_hl_ptr,
+        },
+        Instruction {
+            //0x78
+            disassembly: "LD A B",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: ld_a_b,
+        },
+        Instruction {
+            //0x79
+            disassembly: "LD A C",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: ld_a_c,
+        },
+        Instruction {
+            //0x7a
+            disassembly: "LD A D",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: ld_a_d,
+        },
+        Instruction {
+            //0x7b
+            disassembly: "LD A E",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: ld_a_e,
+        },
+        Instruction {
+            //0x7c
+            disassembly: "LD A H",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: ld_a_h,
+        },
+        Instruction {
+            //0x7d
+            disassembly: "LD A L",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: ld_a_l,
+        },
+        Instruction {
+            //0x7e
+            disassembly: "LD A (HL)",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: ld_a_hl_ptr,
+        },
+        Instruction {
+            //0x7f
+            disassembly: "LD A A",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: ld_a_a,
+        },
+        Instruction {
+            //0x80
+            disassembly: "ADD A B",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: add_a_b,
+        },
+        Instruction {
+            //0x81
+            disassembly: "ADD A C",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: add_a_c,
+        },
+        Instruction {
+            //0x82
+            disassembly: "ADD A D",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: add_a_d,
+        },
+        Instruction {
+            //0x83
+            disassembly: "ADD A E",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: add_a_e,
+        },
+        Instruction {
+            //0x84
+            disassembly: "ADD A H",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: add_a_h,
+        },
+        Instruction {
+            //0x85
+            disassembly: "ADD A L",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: add_a_l,
+        },
+        Instruction {
+            //0x86
+            disassembly: "ADD A (HL)",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: add_hl_ptr_to_a,
+        },
+        Instruction {
+            //0x87
+            disassembly: "ADD A A",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: add_a_a,
+        },
+        Instruction {
+            //0x88
+            disassembly: "ADC A B",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: adc_a_b,
+        },
+        Instruction {
+            //0x89
+            disassembly: "ADC A C",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: adc_a_c,
+        },
+        Instruction {
+            //0x8a
+            disassembly: "ADC A D",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: adc_a_d,
+        },
+        Instruction {
+            //0x8b
+            disassembly: "ADC A E",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: adc_a_e,
+        },
+        Instruction {
+            //0x8c
+            disassembly: "ADC A H",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: adc_a_h,
+        },
+        Instruction {
+            //0x8d
+            disassembly: "ADC A L",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: adc_a_l,
+        },
+        Instruction {
+            //0x8e
+            disassembly: "ADC A (HL)",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: adc_hl_ptr_into_a,
+        },
+        Instruction {
+            //0x8f
+            disassembly: "ADC A A",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: adc_a_a,
+        },
+        Instruction {
+            //0x90
+            disassembly: "SUB B",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: sub_b,
+        },
+        Instruction {
+            //0x91
+            disassembly: "SUB C",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: sub_c,
+        },
+        Instruction {
+            //0x92
+            disassembly: "SUB D",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: sub_d,
+        },
+        Instruction {
+            //0x93
+            disassembly: "SUB E",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: sub_e,
+        },
+        Instruction {
+            //0x94
+            disassembly: "SUB H",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: sub_h,
+        },
+        Instruction {
+            //0x95
+            disassembly: "SUB L",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: sub_l,
+        },
+        Instruction {
+            //0x96
+            disassembly: "SUB (HL)",
+            op_len: 1,
+            clock_cycles: 2,
+            execute: sub_hl_ptr,
+        },
+        Instruction {
+            //0x97
+            disassembly: "SUB A",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: sub_a,
+        },
+        Instruction {
+            //0x98
+            disassembly: "SBC A B",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: sbc_a_b,
+        },
+        Instruction {
+            //0x99
+            disassembly: "SBC A C",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: sbc_a_c,
+        },
+        Instruction {
+            //0x9a
+            disassembly: "SBC A D",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: sbc_a_d,
+        },
+        Instruction {
+            //0x9b
+            disassembly: "SBC A E",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: sbc_a_e,
+        },
+        Instruction {
+            //0x9c
+            disassembly: "SBC A H",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: sbc_a_h,
+        },
+        Instruction {
+            //0x9d
+            disassembly: "SBC A L",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: sbc_a_l,
+        },
+        Instruction {
+            //0x9e
+            disassembly: "SBC A (HL)",
+            op_len: 1,
+            clock_cycles: 2,
+            execute: sbc_hl_ptr,
+        },
+        Instruction {
+            //0x9f
+            disassembly: "SBC A A",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: sbc_a_a,
+        },
+        Instruction {
+            //0xa0
+            disassembly: "AND B",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: and_b,
+        },
+        Instruction {
+            //0xa1
+            disassembly: "AND C",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: and_c,
+        },
+        Instruction {
+            //0xa2
+            disassembly: "AND D",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: and_d,
+        },
+        Instruction {
+            //0xa3
+            disassembly: "AND E",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: and_e,
+        },
+        Instruction {
+            //0xa4
+            disassembly: "AND H",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: and_h,
+        },
+        Instruction {
+            //0xa5
+            disassembly: "AND L",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: and_l,
+        },
+        Instruction {
+            //0xa6
+            disassembly: "AND (HL)",
+            op_len: 1,
+            clock_cycles: 2,
+            execute: and_hl_ptr,
+        },
+        Instruction {
+            //0xa7
+            disassembly: "AND A",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: and_a,
+        },
+        Instruction {
+            //0xa8
+            disassembly: "XOR B",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: xor_b,
+        },
+        Instruction {
+            //0xa9
+            disassembly: "XOR C",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: xor_c,
+        },
+        Instruction {
+            //0xaa
+            disassembly: "XOR D",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: xor_d,
+        },
+        Instruction {
+            //0xab
+            disassembly: "XOR E",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: xor_e,
+        },
+        Instruction {
+            //0xac
+            disassembly: "XOR H",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: xor_h,
+        },
+        Instruction {
+            //0xad
+            disassembly: "XOR L",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: xor_l,
+        },
+        Instruction {
+            //0xae
+            disassembly: "XOR (HL)",
+            op_len: 1,
+            clock_cycles: 2,
+            execute: xor_hl_ptr,
+        },
+        Instruction {
+            //0xaf
+            disassembly: "XOR A",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: xor_a,
+        },
     ];
 }
 
@@ -1312,7 +1760,7 @@ fn load_imm_sp(cpu: &mut cpu::CPU) {
     // load d16 value into SP register
     let n1 = cpu.fetch_byte(cpu.pc);
     let n2 = cpu.fetch_byte(cpu.pc + 1);
-    cpu.sp = ((n2 as u16) << 8) + n2 as u16;
+    cpu.sp = ((n2 as u16) << 8) + n1 as u16;
 }
 
 fn load_val_hl_ptr_dec(cpu: &mut cpu::CPU) {
@@ -1633,4 +2081,516 @@ fn ld_l_hl_ptr(cpu: &mut cpu::CPU) {
 
 fn ld_l_a(cpu: &mut cpu::CPU) {
     cpu.hl.low = cpu.af.high;
+}
+
+// ======================================================
+// 0x7X Instructions
+// ======================================================
+fn load_b_into_hl_ptr(cpu: &mut cpu::CPU) {
+    // load content of B into memory pointed by HL
+    cpu.set_byte(cpu.hl.get_combined(), cpu.bc.high);
+}
+
+fn load_c_into_hl_ptr(cpu: &mut cpu::CPU) {
+    cpu.set_byte(cpu.hl.get_combined(), cpu.bc.low);
+}
+
+fn load_d_into_hl_ptr(cpu: &mut cpu::CPU) {
+    cpu.set_byte(cpu.hl.get_combined(), cpu.de.high);
+}
+
+fn load_e_into_hl_ptr(cpu: &mut cpu::CPU) {
+    cpu.set_byte(cpu.hl.get_combined(), cpu.de.low);
+}
+
+fn load_h_into_hl_ptr(cpu: &mut cpu::CPU) {
+    cpu.set_byte(cpu.hl.get_combined(), cpu.hl.high);
+}
+
+fn load_l_into_hl_ptr(cpu: &mut cpu::CPU) {
+    cpu.set_byte(cpu.hl.get_combined(), cpu.hl.low);
+}
+
+fn halt(cpu: &mut cpu::CPU) {
+    // halt cpu ; wait for interrupt
+    cpu.halted = true;
+}
+
+fn load_a_into_hl_ptr(cpu: &mut cpu::CPU) {
+    cpu.set_byte(cpu.hl.get_combined(), cpu.af.high);
+}
+
+fn ld_a_b(cpu: &mut cpu::CPU) {
+    cpu.af.high = cpu.bc.high;
+}
+
+fn ld_a_c(cpu: &mut cpu::CPU) {
+    cpu.af.high = cpu.bc.low;
+}
+
+fn ld_a_d(cpu: &mut cpu::CPU) {
+    cpu.af.high = cpu.de.high;
+}
+
+fn ld_a_e(cpu: &mut cpu::CPU) {
+    cpu.af.high = cpu.de.low;
+}
+
+fn ld_a_h(cpu: &mut cpu::CPU) {
+    cpu.af.high = cpu.hl.high;
+}
+
+fn ld_a_l(cpu: &mut cpu::CPU) {
+    cpu.af.high = cpu.hl.low;
+}
+
+fn ld_a_hl_ptr(cpu: &mut cpu::CPU) {
+    cpu.af.high = cpu.fetch_byte(cpu.hl.get_combined());
+}
+
+fn ld_a_a(cpu: &mut cpu::CPU) {
+    nop(cpu);
+}
+
+// ======================================================
+// 0x8X Instructions
+// ======================================================
+fn add_a_b(cpu: &mut cpu::CPU) {
+    // add B to A
+    cpu.clear_flag('n');
+    cpu.af.high += cpu.bc.high;
+    cpu.update_flag('z', cpu.af.high == 0);
+    cpu.update_flag('h', cpu.af.high & 0b1111 == 0);
+}
+
+fn add_a_c(cpu: &mut cpu::CPU) {
+    cpu.clear_flag('n');
+    cpu.af.high += cpu.bc.low;
+    cpu.update_flag('z', cpu.af.high == 0);
+    cpu.update_flag('h', cpu.af.high & 0b1111 == 0);
+}
+
+fn add_a_d(cpu: &mut cpu::CPU) {
+    cpu.clear_flag('n');
+    cpu.af.high += cpu.de.high;
+    cpu.update_flag('z', cpu.af.high == 0);
+    cpu.update_flag('h', cpu.af.high & 0b1111 == 0);
+}
+
+fn add_a_e(cpu: &mut cpu::CPU) {
+    cpu.clear_flag('n');
+    cpu.af.high += cpu.de.low;
+    cpu.update_flag('z', cpu.af.high == 0);
+    cpu.update_flag('h', cpu.af.high & 0b1111 == 0);
+}
+
+fn add_a_h(cpu: &mut cpu::CPU) {
+    cpu.clear_flag('n');
+    cpu.af.high += cpu.hl.high;
+    cpu.update_flag('z', cpu.af.high == 0);
+    cpu.update_flag('h', cpu.af.high & 0b1111 == 0);
+}
+
+fn add_a_l(cpu: &mut cpu::CPU) {
+    cpu.clear_flag('n');
+    cpu.af.high += cpu.hl.low;
+    cpu.update_flag('z', cpu.af.high == 0);
+    cpu.update_flag('h', cpu.af.high & 0b1111 == 0);
+}
+
+fn add_hl_ptr_to_a(cpu: &mut cpu::CPU) {
+    cpu.clear_flag('n');
+    cpu.af.high += cpu.fetch_byte(cpu.hl.get_combined());
+    cpu.update_flag('z', cpu.af.high == 0);
+    cpu.update_flag('h', cpu.af.high & 0b1111 == 0);
+}
+
+fn add_a_a(cpu: &mut cpu::CPU) {
+    cpu.clear_flag('n');
+    cpu.af.high += cpu.af.high;
+    cpu.update_flag('z', cpu.af.high == 0);
+    cpu.update_flag('h', cpu.af.high & 0b1111 == 0);
+}
+
+fn adc_a_b(cpu: &mut cpu::CPU) {
+    // add B to A with carry
+    cpu.clear_flag('n');
+    cpu.af.high += cpu.bc.high + (cpu.extract_flag('c') as u8);
+    cpu.update_flag('z', cpu.af.high == 0);
+    cpu.update_flag('h', cpu.af.high & 0b1111 == 0);
+}
+
+fn adc_a_c(cpu: &mut cpu::CPU) {
+    cpu.clear_flag('n');
+    cpu.af.high += cpu.bc.low + (cpu.extract_flag('c') as u8);
+    cpu.update_flag('z', cpu.af.high == 0);
+    cpu.update_flag('h', cpu.af.high & 0b1111 == 0);
+}
+
+fn adc_a_d(cpu: &mut cpu::CPU) {
+    cpu.clear_flag('n');
+    cpu.af.high += cpu.de.high + (cpu.extract_flag('c') as u8);
+    cpu.update_flag('z', cpu.af.high == 0);
+    cpu.update_flag('h', cpu.af.high & 0b1111 == 0);
+}
+
+fn adc_a_e(cpu: &mut cpu::CPU) {
+    cpu.clear_flag('n');
+    cpu.af.high += cpu.de.low + (cpu.extract_flag('c') as u8);
+    cpu.update_flag('z', cpu.af.high == 0);
+    cpu.update_flag('h', cpu.af.high & 0b1111 == 0);
+}
+
+fn adc_a_h(cpu: &mut cpu::CPU) {
+    cpu.clear_flag('n');
+    cpu.af.high += cpu.hl.high + (cpu.extract_flag('c') as u8);
+    cpu.update_flag('z', cpu.af.high == 0);
+    cpu.update_flag('h', cpu.af.high & 0b1111 == 0);
+}
+
+fn adc_a_l(cpu: &mut cpu::CPU) {
+    cpu.clear_flag('n');
+    cpu.af.high += cpu.hl.low + (cpu.extract_flag('c') as u8);
+    cpu.update_flag('z', cpu.af.high == 0);
+    cpu.update_flag('h', cpu.af.high & 0b1111 == 0);
+}
+
+fn adc_hl_ptr_into_a(cpu: &mut cpu::CPU) {
+    cpu.clear_flag('n');
+    cpu.af.high += cpu.fetch_byte(cpu.hl.get_combined()) + (cpu.extract_flag('c') as u8);
+    cpu.update_flag('z', cpu.af.high == 0);
+    cpu.update_flag('h', cpu.af.high & 0b1111 == 0);
+}
+
+fn adc_a_a(cpu: &mut cpu::CPU) {
+    cpu.clear_flag('n');
+    cpu.af.high += cpu.af.high + (cpu.extract_flag('c') as u8);
+    cpu.update_flag('z', cpu.af.high == 0);
+    cpu.update_flag('h', cpu.af.high & 0b1111 == 0);
+}
+
+// ======================================================
+// 0x9X Instructions
+// ======================================================
+fn sub_b(cpu: &mut cpu::CPU) {
+    // sub B to A
+    cpu.set_flag('n');
+    cpu.af.high -= cpu.bc.high;
+    cpu.update_flag('z', cpu.af.high == 0);
+    cpu.update_flag('h', cpu.af.high & 0b1111 == 0);
+}
+
+fn sub_c(cpu: &mut cpu::CPU) {
+    cpu.set_flag('n');
+    cpu.af.high -= cpu.bc.low;
+    cpu.update_flag('z', cpu.af.high == 0);
+    cpu.update_flag('h', cpu.af.high & 0b1111 == 0);
+}
+
+fn sub_d(cpu: &mut cpu::CPU) {
+    cpu.set_flag('n');
+    cpu.af.high -= cpu.de.high;
+    cpu.update_flag('z', cpu.af.high == 0);
+    cpu.update_flag('h', cpu.af.high & 0b1111 == 0);
+}
+
+fn sub_e(cpu: &mut cpu::CPU) {
+    cpu.set_flag('n');
+    cpu.af.high -= cpu.de.low;
+    cpu.update_flag('z', cpu.af.high == 0);
+    cpu.update_flag('h', cpu.af.high & 0b1111 == 0);
+}
+
+fn sub_h(cpu: &mut cpu::CPU) {
+    cpu.set_flag('n');
+    cpu.af.high -= cpu.hl.high;
+    cpu.update_flag('z', cpu.af.high == 0);
+    cpu.update_flag('h', cpu.af.high & 0b1111 == 0);
+}
+
+fn sub_l(cpu: &mut cpu::CPU) {
+    cpu.set_flag('n');
+    cpu.af.high -= cpu.hl.low;
+    cpu.update_flag('z', cpu.af.high == 0);
+    cpu.update_flag('h', cpu.af.high & 0b1111 == 0);
+}
+
+fn sub_hl_ptr(cpu: &mut cpu::CPU) {
+    cpu.set_flag('n');
+    cpu.af.high -= cpu.fetch_byte(cpu.hl.get_combined());
+    cpu.update_flag('z', cpu.af.high == 0);
+    cpu.update_flag('h', cpu.af.high & 0b1111 == 0);
+}
+
+fn sub_a(cpu: &mut cpu::CPU) {
+    cpu.set_flag('n');
+    cpu.af.high -= cpu.af.high;
+    cpu.update_flag('z', cpu.af.high == 0);
+    cpu.update_flag('h', cpu.af.high & 0b1111 == 0);
+}
+
+fn sbc_a_b(cpu: &mut cpu::CPU) {
+    // sub B to A with carry
+    cpu.set_flag('n');
+    cpu.af.high -= cpu.bc.high + (cpu.extract_flag('c') as u8);
+    cpu.update_flag('z', cpu.af.high == 0);
+    cpu.update_flag('h', cpu.af.high & 0b1111 == 0);
+}
+
+fn sbc_a_c(cpu: &mut cpu::CPU) {
+    cpu.set_flag('n');
+    cpu.af.high -= cpu.bc.low + (cpu.extract_flag('c') as u8);
+    cpu.update_flag('z', cpu.af.high == 0);
+    cpu.update_flag('h', cpu.af.high & 0b1111 == 0);
+}
+
+fn sbc_a_d(cpu: &mut cpu::CPU) {
+    cpu.set_flag('n');
+    cpu.af.high -= cpu.de.high + (cpu.extract_flag('c') as u8);
+    cpu.update_flag('z', cpu.af.high == 0);
+    cpu.update_flag('h', cpu.af.high & 0b1111 == 0);
+}
+
+fn sbc_a_e(cpu: &mut cpu::CPU) {
+    cpu.set_flag('n');
+    cpu.af.high -= cpu.de.low + (cpu.extract_flag('c') as u8);
+    cpu.update_flag('z', cpu.af.high == 0);
+    cpu.update_flag('h', cpu.af.high & 0b1111 == 0);
+}
+
+fn sbc_a_h(cpu: &mut cpu::CPU) {
+    cpu.set_flag('n');
+    cpu.af.high -= cpu.hl.high + (cpu.extract_flag('c') as u8);
+    cpu.update_flag('z', cpu.af.high == 0);
+    cpu.update_flag('h', cpu.af.high & 0b1111 == 0);
+}
+
+fn sbc_a_l(cpu: &mut cpu::CPU) {
+    cpu.set_flag('n');
+    cpu.af.high -= cpu.hl.low + (cpu.extract_flag('c') as u8);
+    cpu.update_flag('z', cpu.af.high == 0);
+    cpu.update_flag('h', cpu.af.high & 0b1111 == 0);
+}
+
+fn sbc_hl_ptr(cpu: &mut cpu::CPU) {
+    cpu.set_flag('n');
+    cpu.af.high -= cpu.fetch_byte(cpu.hl.get_combined()) + (cpu.extract_flag('c') as u8);
+    cpu.update_flag('z', cpu.af.high == 0);
+    cpu.update_flag('h', cpu.af.high & 0b1111 == 0);
+}
+
+fn sbc_a_a(cpu: &mut cpu::CPU) {
+    cpu.set_flag('n');
+    cpu.af.high -= cpu.af.high + (cpu.extract_flag('c') as u8);
+    cpu.update_flag('z', cpu.af.high == 0);
+    cpu.update_flag('h', cpu.af.high & 0b1111 == 0);
+}
+
+// ======================================================
+// 0xAX Instructions
+// ======================================================
+fn and_b(cpu: &mut cpu::CPU) {
+    // logical AND of B and A, stored into A
+    cpu.clear_flag('n');
+    cpu.set_flag('h');
+    cpu.clear_flag('c');
+    cpu.af.high &= cpu.bc.high;
+    cpu.update_flag('z', cpu.af.high == 0);
+}
+
+fn and_c(cpu: &mut cpu::CPU) {
+    cpu.clear_flag('n');
+    cpu.set_flag('h');
+    cpu.clear_flag('c');
+    cpu.af.high &= cpu.bc.low;
+    cpu.update_flag('z', cpu.af.high == 0);
+}
+
+fn and_d(cpu: &mut cpu::CPU) {
+    cpu.clear_flag('n');
+    cpu.set_flag('h');
+    cpu.clear_flag('c');
+    cpu.af.high &= cpu.de.high;
+    cpu.update_flag('z', cpu.af.high == 0);
+}
+
+fn and_e(cpu: &mut cpu::CPU) {
+    cpu.clear_flag('n');
+    cpu.set_flag('h');
+    cpu.clear_flag('c');
+    cpu.af.high &= cpu.de.low;
+    cpu.update_flag('z', cpu.af.high == 0);
+}
+
+fn and_h(cpu: &mut cpu::CPU) {
+    cpu.clear_flag('n');
+    cpu.set_flag('h');
+    cpu.clear_flag('c');
+    cpu.af.high &= cpu.hl.high;
+    cpu.update_flag('z', cpu.af.high == 0);
+}
+
+fn and_l(cpu: &mut cpu::CPU) {
+    cpu.clear_flag('n');
+    cpu.set_flag('h');
+    cpu.clear_flag('c');
+    cpu.af.high &= cpu.hl.low;
+    cpu.update_flag('z', cpu.af.high == 0);
+}
+
+fn and_hl_ptr(cpu: &mut cpu::CPU) {
+    cpu.clear_flag('n');
+    cpu.set_flag('h');
+    cpu.clear_flag('c');
+    cpu.af.high &= cpu.fetch_byte(cpu.hl.get_combined());
+    cpu.update_flag('z', cpu.af.high == 0);
+}
+
+fn and_a(cpu: &mut cpu::CPU) {
+    cpu.clear_flag('n');
+    cpu.set_flag('h');
+    cpu.clear_flag('c');
+    cpu.af.high &= cpu.af.high;
+    cpu.update_flag('z', cpu.af.high == 0);
+}
+
+fn xor_b(cpu: &mut cpu::CPU) {
+    // XOR of B and A, stored into A
+    cpu.clear_flag('n');
+    cpu.clear_flag('h');
+    cpu.clear_flag('c');
+    cpu.af.high ^= cpu.bc.high;
+    cpu.update_flag('z', cpu.af.high == 0);
+}
+
+fn xor_c(cpu: &mut cpu::CPU) {
+    cpu.clear_flag('n');
+    cpu.clear_flag('h');
+    cpu.clear_flag('c');
+    cpu.af.high ^= cpu.bc.low;
+    cpu.update_flag('z', cpu.af.high == 0);
+}
+
+fn xor_d(cpu: &mut cpu::CPU) {
+    cpu.clear_flag('n');
+    cpu.clear_flag('h');
+    cpu.clear_flag('c');
+    cpu.af.high ^= cpu.de.high;
+    cpu.update_flag('z', cpu.af.high == 0);
+}
+
+fn xor_e(cpu: &mut cpu::CPU) {
+    cpu.clear_flag('n');
+    cpu.clear_flag('h');
+    cpu.clear_flag('c');
+    cpu.af.high ^= cpu.de.low;
+    cpu.update_flag('z', cpu.af.high == 0);
+}
+
+fn xor_h(cpu: &mut cpu::CPU) {
+    cpu.clear_flag('n');
+    cpu.clear_flag('h');
+    cpu.clear_flag('c');
+    cpu.af.high ^= cpu.hl.high;
+    cpu.update_flag('z', cpu.af.high == 0);
+}
+
+fn xor_l(cpu: &mut cpu::CPU) {
+    cpu.clear_flag('n');
+    cpu.clear_flag('h');
+    cpu.clear_flag('c');
+    cpu.af.high ^= cpu.hl.low;
+    cpu.update_flag('z', cpu.af.high == 0);
+}
+
+fn xor_hl_ptr(cpu: &mut cpu::CPU) {
+    cpu.clear_flag('n');
+    cpu.clear_flag('h');
+    cpu.clear_flag('c');
+    cpu.af.high ^= cpu.fetch_byte(cpu.hl.get_combined());
+    cpu.update_flag('z', cpu.af.high == 0);
+}
+
+fn xor_a(cpu: &mut cpu::CPU) {
+    cpu.clear_flag('n');
+    cpu.clear_flag('h');
+    cpu.clear_flag('c');
+    cpu.af.high ^= cpu.af.high;
+    cpu.update_flag('z', cpu.af.high == 0);
+}
+
+// ======================================================
+// 0xBX Instructions
+// ======================================================
+fn or_b(cpu: &mut cpu::CPU) {
+    // or B and A, stored into A
+    cpu.clear_flag('h');
+    cpu.clear_flag('n');
+    cpu.clear_flag('c');
+    cpu.af.high |= cpu.bc.high;
+    cpu.update_flag('z', cpu.af.high == 0);
+}
+
+fn or_c(cpu: &mut cpu::CPU) {
+    cpu.clear_flag('h');
+    cpu.clear_flag('n');
+    cpu.clear_flag('c');
+    cpu.af.high |= cpu.bc.low;
+    cpu.update_flag('z', cpu.af.high == 0);
+}
+
+fn or_d(cpu: &mut cpu::CPU) {
+    cpu.clear_flag('h');
+    cpu.clear_flag('n');
+    cpu.clear_flag('c');
+    cpu.af.high |= cpu.de.high;
+    cpu.update_flag('z', cpu.af.high == 0);
+}
+
+fn or_e(cpu: &mut cpu::CPU) {
+    cpu.clear_flag('h');
+    cpu.clear_flag('n');
+    cpu.clear_flag('c');
+    cpu.af.high |= cpu.de.low;
+    cpu.update_flag('z', cpu.af.high == 0);
+}
+
+fn or_h(cpu: &mut cpu::CPU) {
+    cpu.clear_flag('h');
+    cpu.clear_flag('n');
+    cpu.clear_flag('c');
+    cpu.af.high |= cpu.hl.high;
+    cpu.update_flag('z', cpu.af.high == 0);
+}
+
+fn or_l(cpu: &mut cpu::CPU) {
+    cpu.clear_flag('h');
+    cpu.clear_flag('n');
+    cpu.clear_flag('c');
+    cpu.af.high |= cpu.hl.low;
+    cpu.update_flag('z', cpu.af.high == 0);
+}
+
+fn or_hl_ptr(cpu: &mut cpu::CPU) {
+    cpu.clear_flag('h');
+    cpu.clear_flag('n');
+    cpu.clear_flag('c');
+    cpu.af.high |= cpu.fetch_byte(cpu.hl.get_combined());
+    cpu.update_flag('z', cpu.af.high == 0);
+}
+
+fn or_a(cpu: &mut cpu::CPU) {
+    cpu.clear_flag('h');
+    cpu.clear_flag('n');
+    cpu.clear_flag('c');
+    cpu.af.high |= cpu.af.high;
+    cpu.update_flag('z', cpu.af.high == 0);
+}
+
+fn cp_b(cpu: &mut cpu::CPU) {
+    // compare A and B by calculating A - B and setting Z flag (does not affect A)
+    cpu.set_flag('n');
+    let diff = cpu.af.high - cpu.bc.high;
+    cpu.update_flag('z', diff == 0);
+    cpu.update_flag('h', diff & 0b1111 == 0);
 }
