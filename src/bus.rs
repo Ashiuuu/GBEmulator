@@ -49,6 +49,10 @@ pub struct Bus {
     external_ram: WorkingRam,
     wram1: WorkingRam,
     wram2: WorkingRam,
+    oam: WorkingRam,
+    io: WorkingRam,
+    high_ram: WorkingRam,
+    interrupt_enable_register: u8,
 }
 
 impl Bus {
@@ -59,6 +63,10 @@ impl Bus {
             external_ram: WorkingRam::from_size(8192, 0xA000),
             wram1: WorkingRam::from_size(4096, 0xC000),
             wram2: WorkingRam::from_size(4096, 0xD000),
+            oam: WorkingRam::from_size(159, 0xFE00),
+            io: WorkingRam::from_size(127, 0xFF00),
+            high_ram: WorkingRam::from_size(126, 0xFF80),
+            interrupt_enable_register: 0,
         }
     }
 
@@ -70,10 +78,12 @@ impl Bus {
             0xA000..=0xBFFF => self.external_ram.get_byte(address),
             0xC000..=0xCFFF => self.wram1.get_byte(address),
             0xD000..=0xDFFF => self.wram2.get_byte(address),
-            0xE000..=0xFFFF => {
-                eprintln!("Address {} not yet implented", address);
-                0
-            }
+            0xE000..=0xFDFF => self.wram1.get_byte(address),
+            0xFE00..=0xFE9F => self.oam.get_byte(address),
+            0xFEA0..=0xFEFF => panic!("Address {:#x} is not usable !", address),
+            0xFF00..=0xFF7F => self.io.get_byte(address),
+            0xFF80..=0xFFFE => self.high_ram.get_byte(address),
+            0xFFFF => self.interrupt_enable_register,
         }
     }
 
@@ -85,7 +95,12 @@ impl Bus {
             0xA000..=0xBFFF => self.external_ram.set_byte(address, data),
             0xC000..=0xCFFF => self.wram1.set_byte(address, data),
             0xD000..=0xDFFF => self.wram2.set_byte(address, data),
-            0xE000..=0xFFFF => println!("{} not yet implented", address),
+            0xE000..=0xFDFF => self.wram1.set_byte(address, data),
+            0xFE00..=0xFE9F => self.oam.set_byte(address, data),
+            0xFEA0..=0xFEFF => panic!("Address {:#x} is not usable !", address),
+            0xFF00..=0xFF7F => self.io.set_byte(address, data),
+            0xFF80..=0xFFFE => self.high_ram.set_byte(address, data),
+            0xFFFF => self.interrupt_enable_register = data,
         }
     }
 
