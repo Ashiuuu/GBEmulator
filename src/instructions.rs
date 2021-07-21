@@ -8,7 +8,7 @@ pub struct Instruction<'a> {
 }
 
 impl Instruction<'_> {
-    pub const SET: [Instruction<'static>; 224] = [
+    pub const SET: [Instruction<'static>; 256] = [
         Instruction {
             //0x00
             disassembly: "NOP",
@@ -1577,6 +1577,229 @@ impl Instruction<'_> {
             clock_cycles: 4,
             execute: rst_3,
         },
+        Instruction {
+            //0xe0
+            disassembly: "LD (a8) A",
+            op_len: 2,
+            clock_cycles: 3,
+            execute: ld_a_to_ffa8,
+        },
+        Instruction {
+            //0xe1
+            disassembly: "POP HL",
+            op_len: 1,
+            clock_cycles: 3,
+            execute: pop_hl,
+        },
+        Instruction {
+            //0xe2
+            disassembly: "LD (C) A",
+            op_len: 1,
+            clock_cycles: 2,
+            execute: ld_a_to_ffc,
+        },
+        Instruction {
+            //0xe3
+            disassembly: "NOT VALID",
+            op_len: 0,
+            clock_cycles: 0,
+            execute: unimplemented_opcode,
+        },
+        Instruction {
+            //0xe4
+            disassembly: "NOT VALID",
+            op_len: 0,
+            clock_cycles: 0,
+            execute: unimplemented_opcode,
+        },
+        Instruction {
+            //0xe5
+            disassembly: "PUSH HL",
+            op_len: 1,
+            clock_cycles: 4,
+            execute: push_hl,
+        },
+        Instruction {
+            //0xe6
+            disassembly: "AND d8",
+            op_len: 2,
+            clock_cycles: 2,
+            execute: and_d8,
+        },
+        Instruction {
+            //0xe7
+            disassembly: "RST 4",
+            op_len: 1,
+            clock_cycles: 4,
+            execute: rst_4,
+        },
+        Instruction {
+            //0xe8
+            disassembly: "ADD SP s8",
+            op_len: 2,
+            clock_cycles: 4,
+            execute: add_sp_s8,
+        },
+        Instruction {
+            //0xe9
+            disassembly: "JP HL",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: jp_hl,
+        },
+        Instruction {
+            //0xea
+            disassembly: "LD (a16) A",
+            op_len: 3,
+            clock_cycles: 4,
+            execute: ld_a16_a,
+        },
+        Instruction {
+            //0xeb
+            disassembly: "NOT VALID",
+            op_len: 0,
+            clock_cycles: 0,
+            execute: unimplemented_opcode,
+        },
+        Instruction {
+            //0xec
+            disassembly: "NOT VALID",
+            op_len: 0,
+            clock_cycles: 0,
+            execute: unimplemented_opcode,
+        },
+        Instruction {
+            //0xed
+            disassembly: "NOT VALID",
+            op_len: 0,
+            clock_cycles: 0,
+            execute: unimplemented_opcode,
+        },
+        Instruction {
+            //0xee
+            disassembly: "XOR d8",
+            op_len: 2,
+            clock_cycles: 2,
+            execute: xor_d8,
+        },
+        Instruction {
+            //0xef
+            disassembly: "RST 5",
+            op_len: 1,
+            clock_cycles: 4,
+            execute: rst_5,
+        },
+        Instruction {
+            //0xf0
+            disassembly: "LD A (a8)",
+            op_len: 2,
+            clock_cycles: 3,
+            execute: ld_ffa8_to_a,
+        },
+        Instruction {
+            //0xf1
+            disassembly: "POP AF",
+            op_len: 1,
+            clock_cycles: 3,
+            execute: pop_af,
+        },
+        Instruction {
+            //0xf2
+            disassembly: "LD A (C)",
+            op_len: 1,
+            clock_cycles: 2,
+            execute: ld_ffc_to_a,
+        },
+        Instruction {
+            //0xf3
+            disassembly: "DI",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: di,
+        },
+        Instruction {
+            //0xf4
+            disassembly: "NOT VALID",
+            op_len: 0,
+            clock_cycles: 0,
+            execute: unimplemented_opcode,
+        },
+        Instruction {
+            //0xf5
+            disassembly: "PUSH AF",
+            op_len: 1,
+            clock_cycles: 4,
+            execute: push_af,
+        },
+        Instruction {
+            //0xf6
+            disassembly: "OR d8",
+            op_len: 2,
+            clock_cycles: 2,
+            execute: or_d8,
+        },
+        Instruction {
+            //0xf7
+            disassembly: "RST 6",
+            op_len: 1,
+            clock_cycles: 4,
+            execute: rst_6,
+        },
+        Instruction {
+            //0xf8
+            disassembly: "LD HL SP+s8",
+            op_len: 2,
+            clock_cycles: 3,
+            execute: ld_sp_s8_to_hl,
+        },
+        Instruction {
+            //0xf9
+            disassembly: "LD SP HL",
+            op_len: 1,
+            clock_cycles: 2,
+            execute: ld_sp_hl,
+        },
+        Instruction {
+            //0xfa
+            disassembly: "LD A (a16)",
+            op_len: 3,
+            clock_cycles: 4,
+            execute: ld_a_a16,
+        },
+        Instruction {
+            //0xfb
+            disassembly: "EI",
+            op_len: 1,
+            clock_cycles: 1,
+            execute: ei,
+        },
+        Instruction {
+            //0xfc
+            disassembly: "NOT VALID",
+            op_len: 0,
+            clock_cycles: 0,
+            execute: unimplemented_opcode,
+        },Instruction {
+            //0xfd
+            disassembly: "NOT VALID",
+            op_len: 0,
+            clock_cycles: 0,
+            execute: unimplemented_opcode,
+        },
+        Instruction {
+            //0xfe
+            disassembly: "CP d8",
+            op_len: 2,
+            clock_cycles: 2,
+            execute: cp_d8,
+        },
+        Instruction {
+            //0xff
+            disassembly: "RST 7",
+            op_len: 1,
+            clock_cycles: 4,
+            execute: rst_7,
+        },
     ];
 }
 
@@ -3143,7 +3366,7 @@ fn rst_1(cpu: &mut cpu::CPU) {
 }
 
 // ======================================================
-// 0xCX Instructions
+// 0xDX Instructions
 // ======================================================
 fn ret_nc(cpu: &mut cpu::CPU) {
     // return from subroutine if C is unset
@@ -3234,4 +3457,182 @@ fn rst_3(cpu: &mut cpu::CPU) {
     cpu.set_byte(cpu.sp, ((cpu.pc & 0b11110000) >> 8) as u8);
     cpu.sp -= 1;
     cpu.pc = 0x18;
+}
+
+// ======================================================
+// 0xEX Instructions
+// ======================================================
+fn ld_a_to_ffa8(cpu: &mut cpu::CPU) {
+    // store content of A register to address FFa8
+    let op = cpu.fetch_byte(cpu.pc);
+    cpu.set_byte(0xFF00 + (op as u16), cpu.af.high);
+}
+
+fn pop_hl(cpu: &mut cpu::CPU) {
+    cpu.hl.low = cpu.fetch_byte(cpu.sp);
+    cpu.sp += 1;
+    cpu.hl.high = cpu.fetch_byte(cpu.sp);
+    cpu.sp += 1;
+}
+
+fn ld_a_to_ffc(cpu: &mut cpu::CPU) {
+    cpu.set_byte(0xFF00 + (cpu.bc.low as u16), cpu.af.high);
+}
+
+fn push_hl(cpu: &mut cpu::CPU) {
+    cpu.sp -= 1;
+    cpu.set_byte(cpu.sp, cpu.hl.high);
+    cpu.sp -= 1;
+    cpu.set_byte(cpu.sp, cpu.hl.low);
+}
+
+fn and_d8(cpu: &mut cpu::CPU) {
+    cpu.clear_flag('n');
+    cpu.set_flag('h');
+    cpu.clear_flag('c');
+    let op = cpu.fetch_byte(cpu.pc);
+    cpu.af.high &= op;
+    cpu.update_flag('z', cpu.af.high == 0);
+}
+
+fn rst_4(cpu: &mut cpu::CPU) {
+    cpu.set_byte(cpu.sp, (cpu.pc & 0b1111) as u8);
+    cpu.sp -= 1;
+    cpu.set_byte(cpu.sp, ((cpu.pc & 0b11110000) >> 8) as u8);
+    cpu.sp -= 1;
+    cpu.pc = 0x20;
+}
+
+fn add_sp_s8(cpu: &mut cpu::CPU) {
+    // add s8 operand to SP register
+    let op = cpu.fetch_byte(cpu.pc) as i8;
+    if op < 0 {
+        cpu.sp -= (-op) as u16;
+    } else {
+        cpu.sp += op as u16;
+    }
+}
+
+fn jp_hl(cpu: &mut cpu::CPU) {
+    // jump to address in HL register
+    cpu.pc = cpu.hl.get_combined();
+}
+
+fn ld_a16_a(cpu: &mut cpu::CPU) {
+    // store A in memory location a16
+    let op1 = cpu.fetch_byte(cpu.pc);
+    let op2 = cpu.fetch_byte(cpu.pc + 1);
+    cpu.set_byte(((op2 as u16) << 8) + (op1 as u16), cpu.af.high);
+}
+
+fn xor_d8(cpu: &mut cpu::CPU) {
+    let op = cpu.fetch_byte(cpu.pc);
+    cpu.af.high ^= op;
+    cpu.clear_flag('n');
+    cpu.clear_flag('h');
+    cpu.clear_flag('c');
+    cpu.update_flag('z', cpu.af.high == 0);
+}
+
+fn rst_5(cpu: &mut cpu::CPU) {
+    cpu.set_byte(cpu.sp, (cpu.pc & 0b1111) as u8);
+    cpu.sp -= 1;
+    cpu.set_byte(cpu.sp, ((cpu.pc & 0b11110000) >> 8) as u8);
+    cpu.sp -= 1;
+    cpu.pc = 0x28;
+}
+
+// ======================================================
+// 0xFX Instructions
+// ======================================================
+fn ld_ffa8_to_a(cpu: &mut cpu::CPU) {
+    // load content of memory location FFa8 into A register
+    let op = cpu.fetch_byte(cpu.pc);
+    cpu.af.high = cpu.fetch_byte(0xFF00 + (op as u16));
+}
+
+fn pop_af(cpu: &mut cpu::CPU) {
+    cpu.af.low = cpu.fetch_byte(cpu.sp);
+    cpu.sp += 1;
+    cpu.af.high = cpu.fetch_byte(cpu.sp);
+    cpu.sp += 1;
+}
+
+fn ld_ffc_to_a(cpu: &mut cpu::CPU) {
+    cpu.af.high = cpu.fetch_byte(0xFF00 + (cpu.bc.low as u16));
+}
+
+fn di(cpu: &mut cpu::CPU) {
+    // disable interrupts
+    cpu.ime = false;
+}
+
+fn push_af(cpu: &mut cpu::CPU) {
+    cpu.sp -= 1;
+    cpu.set_byte(cpu.sp, cpu.af.high);
+    cpu.sp -= 1;
+    cpu.set_byte(cpu.sp, cpu.af.low);
+}
+
+fn or_d8(cpu: &mut cpu::CPU) {
+    let op = cpu.fetch_byte(cpu.pc);
+    cpu.af.high |= op;
+    cpu.update_flag('z', cpu.af.high == 0);
+    cpu.clear_flag('n');
+    cpu.clear_flag('h');
+    cpu.clear_flag('c');
+}
+
+fn rst_6(cpu: &mut cpu::CPU) {
+    cpu.set_byte(cpu.sp, (cpu.pc & 0b1111) as u8);
+    cpu.sp -= 1;
+    cpu.set_byte(cpu.sp, ((cpu.pc & 0b11110000) >> 8) as u8);
+    cpu.sp -= 1;
+    cpu.pc = 0x30;
+}
+
+fn ld_sp_s8_to_hl(cpu: &mut cpu::CPU) {
+    // load content of location SP + s8 into register HL
+    let op = cpu.fetch_byte(cpu.pc) as i8;
+    cpu.clear_flag('z');
+    cpu.clear_flag('n');
+    if op < 0 {
+        cpu.hl.set_word(cpu.sp + ((-op) as u16));
+    } else {
+        cpu.hl.set_word(cpu.sp + (op as u16));
+    }
+    cpu.clear_flag('c');
+    cpu.update_flag('h', cpu.hl.get_combined() & 0b11111111 == 0);
+}
+
+fn ld_sp_hl(cpu: &mut cpu::CPU) {
+    cpu.sp = cpu.hl.get_combined();
+}
+
+fn ld_a_a16(cpu: &mut cpu::CPU) {
+    let op1 = cpu.fetch_byte(cpu.pc);
+    let op2 = cpu.fetch_byte(cpu.pc + 1);
+    cpu.af.high = cpu.fetch_byte(((op2 as u16) << 8) + (op1 as u16));
+}
+
+fn ei(cpu: &mut cpu::CPU) {
+    // enable interrupts
+    cpu.ime = true;
+}
+
+fn cp_d8(cpu: &mut cpu::CPU) {
+    cpu.set_flag('n');
+    let op = cpu.fetch_byte(cpu.pc);
+    let diff = cpu.af.high.wrapping_sub(op);
+    cpu.update_flag('z', diff == 0);
+    cpu.update_flag('h', diff & 0b1111 == 0);
+    cpu.update_flag('c', cpu.bc.low > cpu.af.high);
+}
+
+fn rst_7(cpu: &mut cpu::CPU) {
+    cpu.set_byte(cpu.sp, (cpu.pc & 0b1111) as u8);
+    cpu.sp -= 1;
+    cpu.set_byte(cpu.sp, ((cpu.pc & 0b11110000) >> 8) as u8);
+    cpu.sp -= 1;
+    cpu.pc = 0x38;
 }
