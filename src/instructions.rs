@@ -8,7 +8,7 @@ pub struct Instruction<'a> {
 }
 
 impl Instruction<'_> {
-    pub const SET: [Instruction<'static>; 208] = [
+    pub const SET: [Instruction<'static>; 224] = [
         Instruction {
             //0x00
             disassembly: "NOP",
@@ -1465,6 +1465,118 @@ impl Instruction<'_> {
             clock_cycles: 4,
             execute: rst_1,
         },
+        Instruction {
+            //0xd0
+            disassembly: "RET NC",
+            op_len: 1,
+            clock_cycles: 5,
+            execute: ret_nc,
+        },
+        Instruction {
+            //0xd1
+            disassembly: "POP DE",
+            op_len: 1,
+            clock_cycles: 3,
+            execute: pop_de,
+        },
+        Instruction {
+            //0xd2
+            disassembly: "JP NC a16",
+            op_len: 3,
+            clock_cycles: 4,
+            execute: jp_nc_a16,
+        },
+        Instruction {
+            //0xd3
+            disassembly: "NOT VALID",
+            op_len: 0,
+            clock_cycles: 0,
+            execute: unimplemented_opcode,
+        },
+        Instruction {
+            //0xd4
+            disassembly: "CALL NC a16",
+            op_len: 3,
+            clock_cycles: 6,
+            execute: call_nc_a16
+        },
+        Instruction {
+            //0xd5
+            disassembly: "PUSH DE",
+            op_len: 1,
+            clock_cycles: 4,
+            execute: push_de,
+        },
+        Instruction {
+            //0xd6
+            disassembly: "SUB d8",
+            op_len: 2,
+            clock_cycles: 2,
+            execute: sub_d8,
+        },
+        Instruction {
+            //0xd7
+            disassembly: "RST 2",
+            op_len: 1,
+            clock_cycles: 4,
+            execute: rst_2,
+        },
+        Instruction {
+            //0xd8
+            disassembly: "RET C",
+            op_len: 1,
+            clock_cycles: 5,
+            execute: ret_c,
+        },
+        Instruction {
+            //0xd9
+            disassembly: "RETI",
+            op_len: 1,
+            clock_cycles: 4,
+            execute: ret_i,
+        },
+        Instruction {
+            //0xda
+            disassembly: "JP C a16",
+            op_len: 3,
+            clock_cycles: 4,
+            execute: jp_c_a16,
+        },
+        Instruction {
+            //0xdb
+            disassembly: "NOT VALID",
+            op_len: 0,
+            clock_cycles: 0,
+            execute: unimplemented_opcode,
+        },
+        Instruction {
+            //0xdc
+            disassembly: "CALL C a16",
+            op_len: 3,
+            clock_cycles: 6,
+            execute: call_c_a16,
+        },
+        Instruction {
+            //0xdd
+            disassembly: "NOT VALID",
+            op_len: 0,
+            clock_cycles: 0,
+            execute: unimplemented_opcode,
+        },
+        Instruction {
+            //0xde
+            disassembly: "SBC A d8",
+            op_len: 2,
+            clock_cycles: 2,
+            execute: sbc_a_d8,
+        },
+        Instruction {
+            //0xdf
+            disassembly: "RST 3",
+            op_len: 1,
+            clock_cycles: 4,
+            execute: rst_3,
+        },
     ];
 }
 
@@ -1504,27 +1616,18 @@ fn inc_bc(cpu: &mut cpu::CPU) {
 
 fn inc_b(cpu: &mut cpu::CPU) {
     // increment 8 bits register B
-    cpu.bc.high += 1;
-    if cpu.bc.high == 0 {
-        cpu.set_flag('z'); // zero flag
-    }
-    if cpu.bc.high & 0b1111 == 0 {
-        // if the first 4 bytes resulted in a carry
-        cpu.set_flag('h'); // set half carry flag
-    }
-    cpu.set_flag('n'); // operation was addition
+    cpu.bc.high = cpu.bc.high.wrapping_add(1);
+    cpu.update_flag('z', cpu.bc.high == 0);
+    cpu.update_flag('h', cpu.bc.high & 0b1111 == 0);
+    cpu.clear_flag('n'); // operation was addition
 }
 
 fn dec_b(cpu: &mut cpu::CPU) {
     // decrement 8 bits register B
-    if cpu.bc.high & 0b1111 == 0 {
-        cpu.set_flag('h');
-    }
     cpu.bc.high = cpu.bc.high.wrapping_sub(1);
-    if cpu.bc.high == 0 {
-        cpu.set_flag('z');
-    }
-    cpu.clear_flag('n');
+    cpu.update_flag('h', cpu.bc.high & 0b1111 == 0);
+    cpu.update_flag('z', cpu.bc.high == 0);
+    cpu.set_flag('n');
 }
 
 fn load_imm_b(cpu: &mut cpu::CPU) {
@@ -1589,27 +1692,18 @@ fn dec_bc(cpu: &mut cpu::CPU) {
 
 fn inc_c(cpu: &mut cpu::CPU) {
     // increment C register
-    cpu.bc.low += 1;
-    if cpu.bc.low == 0 {
-        cpu.set_flag('z'); // zero flag
-    }
-    if cpu.bc.low & 0b1111 == 0 {
-        // if the first 4 bytes resulted in a carry
-        cpu.set_flag('h'); // set half carry flag
-    }
-    cpu.set_flag('n'); // operation was addition
+    cpu.bc.low = cpu.bc.low.wrapping_add(1);
+    cpu.update_flag('z', cpu.bc.low == 0);
+    cpu.update_flag('h', cpu.bc.low & 0b1111 == 0);
+    cpu.clear_flag('n'); // operation was addition
 }
 
 fn dec_c(cpu: &mut cpu::CPU) {
     // decrement 8 bits register C
-    if cpu.bc.low & 0b1111 == 0 {
-        cpu.set_flag('h');
-    }
-    cpu.bc.low -= 1;
-    if cpu.bc.low == 0 {
-        cpu.set_flag('z');
-    }
-    cpu.clear_flag('n');
+    cpu.bc.low = cpu.bc.low.wrapping_sub(1);
+    cpu.update_flag('z', cpu.bc.low == 0);
+    cpu.update_flag('h', cpu.bc.low & 0b1111 == 0);
+    cpu.set_flag('n');
 }
 
 fn load_imm_c(cpu: &mut cpu::CPU) {
@@ -1717,6 +1811,7 @@ fn rla(cpu: &mut cpu::CPU) {
 fn jr_s8(cpu: &mut cpu::CPU) {
     // jump relative to pc ; s8 is signed
     let op: i8 = cpu.fetch_byte(cpu.pc) as i8;
+    //cpu.pc = ((cpu.pc as u32 as i32) + (op as i32)) as u16;
     if op < 0 {
         cpu.pc -= (-op) as u16;
     } else {
@@ -1989,7 +2084,6 @@ fn load_imm_sp(cpu: &mut cpu::CPU) {
 
 fn load_val_hl_ptr_dec(cpu: &mut cpu::CPU) {
     // load A into address pointed by HL and decrements HL
-    println!("HL = {:#x}", cpu.hl.get_combined());
     cpu.set_byte(cpu.hl.get_combined(), cpu.af.high);
     dec_hl(cpu);
 }
@@ -3046,4 +3140,98 @@ fn rst_1(cpu: &mut cpu::CPU) {
     cpu.set_byte(cpu.sp, ((cpu.pc & 0b11110000) >> 8) as u8);
     cpu.sp -= 1;
     cpu.pc = 8;
+}
+
+// ======================================================
+// 0xCX Instructions
+// ======================================================
+fn ret_nc(cpu: &mut cpu::CPU) {
+    // return from subroutine if C is unset
+    if cpu.extract_flag('c') == false {
+        ret(cpu);
+    }
+}
+
+fn pop_de(cpu: &mut cpu::CPU) {
+    cpu.de.low = cpu.fetch_byte(cpu.sp);
+    cpu.sp += 1;
+    cpu.de.high = cpu.fetch_byte(cpu.sp);
+    cpu.sp += 1;
+}
+
+fn jp_nc_a16(cpu: &mut cpu::CPU) {
+    if cpu.extract_flag('c') == false {
+        jp_a16(cpu);
+    }
+}
+
+fn call_nc_a16(cpu: &mut cpu::CPU) {
+    if cpu.extract_flag('c') == false {
+        call_a16(cpu);
+    }
+}
+
+fn push_de(cpu: &mut cpu::CPU) {
+    cpu.sp -= 1;
+    cpu.set_byte(cpu.sp, cpu.de.high);
+    cpu.sp -= 1;
+    cpu.set_byte(cpu.sp, cpu.de.low);
+}
+
+fn sub_d8(cpu: &mut cpu::CPU) {
+    // sub d8 value to A
+    let op = cpu.fetch_byte(cpu.pc);
+    cpu.af.high = cpu.af.high.wrapping_sub(op);
+    cpu.update_flag('z', cpu.af.high == 0);
+    cpu.update_flag('h', cpu.af.high & 0b1111 == 0);
+    cpu.set_flag('n');
+}
+
+fn rst_2(cpu: &mut cpu::CPU) {
+    cpu.set_byte(cpu.sp, (cpu.pc & 0b1111) as u8);
+    cpu.sp -= 1;
+    cpu.set_byte(cpu.sp, ((cpu.pc & 0b11110000) >> 8) as u8);
+    cpu.sp -= 1;
+    cpu.pc = 0x10;
+}
+
+fn ret_c(cpu: &mut cpu::CPU) {
+    if cpu.extract_flag('c') == true {
+        ret(cpu);
+    }
+}
+
+fn ret_i(cpu: &mut cpu::CPU) {
+    cpu.ime = true;
+    ret(cpu);
+}
+
+fn jp_c_a16(cpu: &mut cpu::CPU) {
+    if cpu.extract_flag('c') == true {
+        jp_a16(cpu);
+    }
+}
+
+fn call_c_a16(cpu: &mut cpu::CPU) {
+    if cpu.extract_flag('c') == true {
+        call_a16(cpu);
+    }
+}
+
+fn sbc_a_d8(cpu: &mut cpu::CPU) {
+    let op = cpu.fetch_byte(cpu.pc);
+    cpu.set_flag('n');
+    let cf = cpu.extract_flag('c') as u8;
+    cpu.af.high = cpu.af.high.wrapping_sub(op + cf);
+    cpu.update_flag('c', op + cf > cpu.af.high);
+    cpu.update_flag('z', cpu.af.high == 0);
+    cpu.update_flag('h', cpu.af.high & 0b1111 == 0);
+}
+
+fn rst_3(cpu: &mut cpu::CPU) {
+    cpu.set_byte(cpu.sp, (cpu.pc & 0b1111) as u8);
+    cpu.sp -= 1;
+    cpu.set_byte(cpu.sp, ((cpu.pc & 0b11110000) >> 8) as u8);
+    cpu.sp -= 1;
+    cpu.pc = 0x18;
 }

@@ -39,6 +39,7 @@ pub struct CPU {
     clock_cycles_to_go: u8,
     pub stopped: bool,
     pub halted: bool,
+    pub ime: bool,
     bus: bus::Bus,
 }
 
@@ -54,16 +55,17 @@ impl CPU {
             clock_cycles_to_go: 0,
             stopped: false,
             halted: false,
+            ime: true,
             bus: bus::Bus::new_bus(filename),
         }
     }
 
-    pub fn tick(&mut self) {
+    pub fn tick(&mut self, debugging: bool) {
         // execute a tick of the CPU
         if self.clock_cycles_to_go > 0 {
             self.clock_cycles_to_go -= 1;
         } else {
-            self.execute_instruction();
+            self.execute_instruction(debugging);
         }
     }
 
@@ -108,13 +110,20 @@ impl CPU {
         }
     }
 
-    fn execute_instruction(&mut self) {
+    fn execute_instruction(&mut self, debugging: bool) {
         // fetch instruction byte on bus based on pc register
         let op = self.bus.fetch_byte(self.pc);
-        self.pc += 1;
         let current_instruction = &instructions::Instruction::SET[op as usize];
-        //println!("[*] {}", current_instruction.disassembly);
+        if debugging {
+            println!("{:#x} : {}", op, current_instruction.disassembly);
+            println!("HL: {:#04x}\nBC: {:#04x}\nDE: {:#04x}\nA: {:#02x}\nPC: {:#04x}\nSP: {:#04x}", self.hl.get_combined(), self.bc.get_combined(), self.de.get_combined(), self.af.high, self.pc, self.sp);
+            println!("Z: {}\nH: {}\nN: {}\nC: {}", self.extract_flag('z'), self.extract_flag('h'), self.extract_flag('n'), self.extract_flag('c'));
+            println!("Memory: {:#02x}    {:#02x}", self.fetch_byte(self.pc + 1), self.fetch_byte(self.pc + 2));
+            let mut cont = String::new();
+            std::io::stdin().read_line(&mut cont).expect("Unable to read from stdin !");
+        }
         // identify instruction and execute it
+        self.pc += 1;
         let previous_pc = self.pc;
         (current_instruction.execute)(self);
         if previous_pc == self.pc {
