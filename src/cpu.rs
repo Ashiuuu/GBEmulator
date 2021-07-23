@@ -40,11 +40,14 @@ pub struct CPU {
     pub stopped: bool,
     pub halted: bool,
     pub ime: bool,
-    bus: bus::Bus,
+
+    // debugging tools
+    debug_flag: bool,
+    breakpoint: u16,
 }
 
 impl CPU {
-    pub fn new_cpu(filename: &String) -> CPU {
+    pub fn new_cpu() -> CPU {
         CPU {
             af: Register::new_register(),
             bc: Register::new_register(),
@@ -56,16 +59,21 @@ impl CPU {
             stopped: false,
             halted: false,
             ime: true,
-            bus: bus::Bus::new_bus(filename),
+            debug_flag: false,
+            breakpoint: 0,
         }
     }
 
-    pub fn tick(&mut self, debugging: bool) {
+    pub fn set_breakpoint(&mut self, b: u16) {
+        self.breakpoint = b;
+    }
+
+    pub fn tick(&mut self, bus: &mut bus::Bus, debugging: bool) {
         // execute a tick of the CPU
         if self.clock_cycles_to_go > 0 {
             self.clock_cycles_to_go -= 1;
         } else {
-            self.execute_instruction(debugging);
+            self.execute_instruction(bus, debugging);
         }
     }
 
@@ -88,16 +96,16 @@ impl CPU {
             'n' => self.af.low |= 0b1000000,
             'h' => self.af.low |= 0b100000,
             'c' => self.af.low |= 0b10000,
-            _ => eprintln!("Invalid flag character : {}", c),
+            _ => println!("Invalid flag character : {}", c),
         };
     }
 
     pub fn clear_flag(&mut self, c: char) {
         match c {
             'z' => self.af.low &= 0b01111111,
-            'n' => self.af.low &= 0b0111111,
-            'h' => self.af.low &= 0b011111,
-            'c' => self.af.low &= 0b01111,
+            'n' => self.af.low &= 0b10111111,
+            'h' => self.af.low &= 0b11011111,
+            'c' => self.af.low &= 0b11101111,
             _ => eprintln!("Invalid flag character : {}", c),
         };
     }
@@ -110,22 +118,30 @@ impl CPU {
         }
     }
 
-    fn execute_instruction(&mut self, debugging: bool) {
+    fn execute_instruction(&mut self, bus: &mut bus::Bus, debugging: bool) {
         // fetch instruction byte on bus based on pc register
-        let op = self.bus.fetch_byte(self.pc);
+        let op = self.fetch_byte(bus, self.pc);
         let current_instruction = &instructions::Instruction::SET[op as usize];
-        if debugging {
+
+        if (debugging && self.pc == self.breakpoint) || self.debug_flag == true {
+            self.debug_flag = true;
             println!("{:#x} : {}", op, current_instruction.disassembly);
             println!("HL: {:#04x}\nBC: {:#04x}\nDE: {:#04x}\nA: {:#02x}\nPC: {:#04x}\nSP: {:#04x}", self.hl.get_combined(), self.bc.get_combined(), self.de.get_combined(), self.af.high, self.pc, self.sp);
-            println!("Z: {}\nH: {}\nN: {}\nC: {}", self.extract_flag('z'), self.extract_flag('h'), self.extract_flag('n'), self.extract_flag('c'));
-            println!("Memory: {:#02x}    {:#02x}", self.fetch_byte(self.pc + 1), self.fetch_byte(self.pc + 2));
+            println!("F: {:#x}\nZ: {}\nH: {}\nN: {}\nC: {}", self.af.low, self.extract_flag('z'), self.extract_flag('h'), self.extract_flag('n'), self.extract_flag('c'));
+            println!("Memory: {:#02x} {:#02x}", self.fetch_byte(bus, self.pc + 1), self.fetch_byte(bus, self.pc + 2));
+            println!("Stack: {:#02x} {:#02x} {:#02x} {:#02x}", self.fetch_byte(bus, self.sp - 2), self.fetch_byte(bus, self.sp - 1), self.fetch_byte(bus, self.sp), self.fetch_byte(bus, self.sp + 1));
             let mut cont = String::new();
             std::io::stdin().read_line(&mut cont).expect("Unable to read from stdin !");
+            /*if cont.starts_with('j') {
+                let add = u16::from_str_radix(&cont.as_str()[4..], 16).unwrap();
+                self.breakpoint = add;
+                self.debug_flag = false;
+            }*/
         }
         // identify instruction and execute it
         self.pc += 1;
         let previous_pc = self.pc;
-        (current_instruction.execute)(self);
+        (current_instruction.execute)(self, bus);
         if previous_pc == self.pc {
             // TEMPORARY ; CAN POTENTIALLY CAUSE BUGS IF JUMP OF 0 (although nonsensical)
             //if a jump did not occurr
@@ -134,15 +150,26 @@ impl CPU {
         self.clock_cycles_to_go += current_instruction.clock_cycles;
     }
 
-    pub fn fetch_byte(&self, address: u16) -> u8 {
-        self.bus.fetch_byte(address)
+    pub fn fetch_byte(&self, bus: &mut bus::Bus, address: u16) -> u8 {
+        bus.fetch_byte(address)
     }
 
-    pub fn set_byte(&mut self, address: u16, data: u8) {
-        self.bus.set_byte(address, data);
+    pub fn set_byte(&mut self, bus: &mut bus::Bus, address: u16, data: u8) {
+        bus.set_byte(address, data);
     }
 
-    pub fn set_word(&mut self, address: u16, data: u16) {
-        self.bus.set_word(address, data);
+    pub fn set_word(&mut self, bus: &mut bus::Bus, address: u16, data: u16) {
+        bus.set_word(address, data);
+    }
+
+    pub fn push_stack(&mut self, bus: &mut bus::Bus, data: u16) {
+        self.sp -= 2;
+        bus.set_word(self.sp, data);
+    }
+
+    pub fn pop_stack_d16(&mut self, bus: &mut bus::Bus) -> u16 {
+        let data = bus.fetch_word(self.sp);
+        self.sp += 2;
+        data
     }
 }
