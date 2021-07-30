@@ -20,14 +20,16 @@ impl ROM {
 }
 
 struct WorkingRam {
-    data: Box<[u8]>,
+    //data: Box<[u8]>,
+    data: Vec<u8>,
     base: u16,
 }
 
 impl WorkingRam {
     fn from_size(size: usize, b: u16) -> WorkingRam {
         WorkingRam {
-            data: vec![0; size].into_boxed_slice(),
+            //data: vec![0; size].into_boxed_slice(),
+            data: vec![0; size],
             base: b,
         }
     }

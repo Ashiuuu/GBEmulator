@@ -1,5 +1,6 @@
 use crate::bus;
 use crate::instructions;
+use crate::instructions2;
 
 pub struct Register {
     pub low: u8,
@@ -58,7 +59,7 @@ impl CPU {
             clock_cycles_to_go: 0,
             stopped: false,
             halted: false,
-            ime: true,
+            ime: false,
             debug_flag: false,
             breakpoint: 0,
         }
@@ -121,7 +122,10 @@ impl CPU {
     fn execute_instruction(&mut self, bus: &mut bus::Bus, debugging: bool) {
         // fetch instruction byte on bus based on pc register
         let op = self.fetch_byte(bus, self.pc);
-        let current_instruction = &instructions::Instruction::SET[op as usize];
+        let current_instruction = match op {
+            0xCB => &instructions2::Instruction::SECOND_SET[op as usize],
+            _ => &instructions::Instruction::SET[op as usize],
+        };
 
         if (debugging && self.pc == self.breakpoint) || self.debug_flag == true {
             self.debug_flag = true;
@@ -148,6 +152,38 @@ impl CPU {
             self.pc += current_instruction.op_len - 1;
         }
         self.clock_cycles_to_go += current_instruction.clock_cycles;
+
+        // interrupts
+        if self.ime == true {
+            let enabled = bus.fetch_byte(0xFFFF);
+            let requested = bus.fetch_byte(0xFF0F);
+            if enabled & 1 == 1 && requested & 1 == 1 { // if vblank interrupt is enabled and requested
+                self.ime = false;
+                bus.set_byte(0xFF0F, requested ^ 1);
+                self.push_stack(bus, self.pc);
+                self.pc = 0x40;
+            } else if enabled & 0b10 == 0b10 && requested & 0b10 == 0b10 { // LCD STAT interrupt
+                self.ime = false;
+                bus.set_byte(0xFF0F, requested ^ 0b10);
+                self.push_stack(bus, self.pc);
+                self.pc = 0x48;
+            } else if enabled & 0b100 == 0b100 && requested & 0b100 == 0b100 { // Timer interrupt
+                self.ime = false;
+                bus.set_byte(0xFF0F, requested ^ 0b100);
+                self.push_stack(bus, self.pc);
+                self.pc = 0x50;
+            } else if enabled & 0b1000 == 0b1000 && requested & 0b1000 == 0b1000 { // serial interrupt
+                self.ime = false;
+                bus.set_byte(0xFF0F, requested ^ 0b1000);
+                self.push_stack(bus, self.pc);
+                self.pc = 0x58;
+            } else if enabled & 0b10000 == 0b10000 && requested & 0b10000 == 0b10000 { // joypad interrupt
+                self.ime = false;
+                bus.set_byte(0xFF0F, requested ^ 0b10000);
+                self.push_stack(bus, self.pc);
+                self.pc = 0x60;
+            }
+        }
     }
 
     pub fn fetch_byte(&self, bus: &mut bus::Bus, address: u16) -> u8 {

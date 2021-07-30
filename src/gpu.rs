@@ -39,6 +39,8 @@ impl GPU {
                     self.current_line += 1;
                     if self.current_line == GPU::MAX_LINE { // beginning hblank of last line => vblank
                         self.mode = 1;
+                        let requested = bus.fetch_byte(0xFF0F);
+                        bus.set_byte(0xFF0F, requested | 1);
                         // eventually render canvas here
                     } else {
                         self.mode = 2; // hblank over, start scanning again

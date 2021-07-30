@@ -1,6 +1,7 @@
 mod bus;
 mod cpu;
 mod instructions;
+mod instructions2;
 mod gpu;
 
 //use sdl2;
@@ -24,7 +25,7 @@ fn main() {
     canvas.present();*/
 
     let debugging = false;
-    let advanced_debug = true;
+    let advanced_debug = false;
     cpu.set_breakpoint(0x27a3);
 
     loop {

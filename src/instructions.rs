@@ -1971,9 +1971,9 @@ fn load_val_de_ptr(cpu: &mut cpu::CPU, bus: &mut bus::Bus) {
 fn inc_de(cpu: &mut cpu::CPU, _: &mut bus::Bus) {
     // increment 16 bits registry DE ; need to check for carry from low to high
     if cpu.de.low == 255 {
-        cpu.de.high += 1;
+        cpu.de.high = cpu.de.high.wrapping_add(1);
     }
-    cpu.de.low += 1;
+    cpu.de.low = cpu.de.low.wrapping_add(1);
 }
 
 fn inc_d(cpu: &mut cpu::CPU, _: &mut bus::Bus) {
@@ -2146,9 +2146,9 @@ fn load_val_hl_ptr(cpu: &mut cpu::CPU, bus: &mut bus::Bus) {
 fn inc_hl(cpu: &mut cpu::CPU, _: &mut bus::Bus) {
     // increment 16 bits registry HL ; need to check for carry from low to high
     if cpu.hl.low == 255 {
-        cpu.hl.high += 1;
+        cpu.hl.high = cpu.hl.high.wrapping_add(1);
     }
-    cpu.hl.low += 1;
+    cpu.hl.low = cpu.hl.high.wrapping_add(1);
 }
 
 fn inc_h(cpu: &mut cpu::CPU, _: &mut bus::Bus) {
