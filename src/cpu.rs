@@ -28,6 +28,10 @@ impl Register {
         self.set_low_word(data);
         self.set_high_word(data);
     }
+
+    pub fn print(&self) -> String {
+        format!("{:#04x}:{:#04x}     {:#06x}", self.high, self.low, self.get_combined())
+    }
 }
 
 pub struct CPU {
@@ -64,12 +68,24 @@ impl CPU {
             breakpoint: 0,
         }
     }
+    
+    pub fn dump_registers(&self, bus: &bus::Bus) {
+        println!("BC: {}", self.bc.print());
+        println!("DE: {}", self.de.print());
+        println!("HL: {}", self.hl.print());
+        println!("A: {:#04x}", self.af.high);
+        println!("F: {:#04x}   |  Z: {}   H: {}   N: {}   C: {}", self.af.low, self.extract_flag('z'), self.extract_flag('h'), self.extract_flag('n'), self.extract_flag('c'));
+        println!("PC: {:#06x}", self.pc);
+        println!("SP: {:#06x}", self.sp);
+        println!("Memory: {:#04x} {:#04x}", bus.fetch_byte(self.pc + 1), bus.fetch_byte(self.pc + 2));
+        println!("Stack: {:#04x} {:#04x} {:#04x} {:#04x}\n", bus.fetch_byte(self.sp - 2), bus.fetch_byte(self.sp - 1), bus.fetch_byte(self.sp), bus.fetch_byte(self.sp + 1));
+    }
 
     pub fn set_breakpoint(&mut self, b: u16) {
         self.breakpoint = b;
     }
 
-    pub fn tick(&mut self, bus: &mut bus::Bus, debugging: bool) {
+    pub fn tick(&mut self, bus: &mut bus::Bus, debugging: u8) {
         // execute a tick of the CPU
         if self.clock_cycles_to_go > 0 {
             self.clock_cycles_to_go -= 1;
@@ -119,7 +135,7 @@ impl CPU {
         }
     }
 
-    fn execute_instruction(&mut self, bus: &mut bus::Bus, debugging: bool) {
+    fn execute_instruction(&mut self, bus: &mut bus::Bus, debugging: u8) {
         // fetch instruction byte on bus based on pc register
         let op = self.fetch_byte(bus, self.pc);
         let current_instruction = match op {
@@ -127,20 +143,18 @@ impl CPU {
             _ => &instructions::Instruction::SET[op as usize],
         };
 
-        if (debugging && self.pc == self.breakpoint) || self.debug_flag == true {
+        if (debugging != 0 && self.pc == self.breakpoint) || self.debug_flag == true {
+            let mut test = false;
+            if self.pc == 0x38 {
+                test = true;
+            }
             self.debug_flag = true;
             println!("{:#x} : {}", op, current_instruction.disassembly);
-            println!("HL: {:#04x}\nBC: {:#04x}\nDE: {:#04x}\nA: {:#02x}\nPC: {:#04x}\nSP: {:#04x}", self.hl.get_combined(), self.bc.get_combined(), self.de.get_combined(), self.af.high, self.pc, self.sp);
-            println!("F: {:#x}\nZ: {}\nH: {}\nN: {}\nC: {}", self.af.low, self.extract_flag('z'), self.extract_flag('h'), self.extract_flag('n'), self.extract_flag('c'));
-            println!("Memory: {:#02x} {:#02x}", self.fetch_byte(bus, self.pc + 1), self.fetch_byte(bus, self.pc + 2));
-            println!("Stack: {:#02x} {:#02x} {:#02x} {:#02x}", self.fetch_byte(bus, self.sp - 2), self.fetch_byte(bus, self.sp - 1), self.fetch_byte(bus, self.sp), self.fetch_byte(bus, self.sp + 1));
+            self.dump_registers(bus);
             let mut cont = String::new();
-            std::io::stdin().read_line(&mut cont).expect("Unable to read from stdin !");
-            /*if cont.starts_with('j') {
-                let add = u16::from_str_radix(&cont.as_str()[4..], 16).unwrap();
-                self.breakpoint = add;
-                self.debug_flag = false;
-            }*/
+            if debugging == 2 || test == true {
+                std::io::stdin().read_line(&mut cont).expect("Unable to read from stdin !");
+            }
         }
         // identify instruction and execute it
         self.pc += 1;

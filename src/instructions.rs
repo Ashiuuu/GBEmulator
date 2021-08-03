@@ -2030,12 +2030,7 @@ fn rla(cpu: &mut cpu::CPU, _: &mut bus::Bus) {
 fn jr_s8(cpu: &mut cpu::CPU, bus: &mut bus::Bus) {
     // jump relative to pc ; s8 is signed
     let op: i8 = cpu.fetch_byte(bus, cpu.pc) as i8;
-    //cpu.pc = ((cpu.pc as u32 as i32) + (op as i32)) as u16;
-    if op < 0 {
-        cpu.pc -= ((-op) as u16) - 1;
-    } else {
-        cpu.pc += op as u16;
-    }
+    cpu.pc = (((cpu.pc as u32 as i32) + (op as i32)) as u16) + 1;
 }
 
 fn add_de_to_hl(cpu: &mut cpu::CPU, _: &mut bus::Bus) {
@@ -2148,7 +2143,7 @@ fn inc_hl(cpu: &mut cpu::CPU, _: &mut bus::Bus) {
     if cpu.hl.low == 255 {
         cpu.hl.high = cpu.hl.high.wrapping_add(1);
     }
-    cpu.hl.low = cpu.hl.high.wrapping_add(1);
+    cpu.hl.low = cpu.hl.low.wrapping_add(1);
 }
 
 fn inc_h(cpu: &mut cpu::CPU, _: &mut bus::Bus) {
@@ -2695,7 +2690,7 @@ fn ld_a_a(cpu: &mut cpu::CPU, bus: &mut bus::Bus) {
 fn add_a_b(cpu: &mut cpu::CPU, _: &mut bus::Bus) {
     // add B to A
     cpu.clear_flag('n');
-    cpu.af.high += cpu.bc.high;
+    cpu.af.high = cpu.af.high.wrapping_add(cpu.bc.high);
     cpu.update_flag('z', cpu.af.high == 0);
     cpu.update_flag('h', cpu.af.high & 0b1111 == 0);
     cpu.update_flag('c', cpu.af.high > 0);
@@ -2703,7 +2698,7 @@ fn add_a_b(cpu: &mut cpu::CPU, _: &mut bus::Bus) {
 
 fn add_a_c(cpu: &mut cpu::CPU, _: &mut bus::Bus) {
     cpu.clear_flag('n');
-    cpu.af.high += cpu.bc.low;
+    cpu.af.high = cpu.af.high.wrapping_add(cpu.bc.low);
     cpu.update_flag('z', cpu.af.high == 0);
     cpu.update_flag('h', cpu.af.high & 0b1111 == 0);
     cpu.update_flag('c', cpu.af.high > 0);
@@ -2711,7 +2706,7 @@ fn add_a_c(cpu: &mut cpu::CPU, _: &mut bus::Bus) {
 
 fn add_a_d(cpu: &mut cpu::CPU, _: &mut bus::Bus) {
     cpu.clear_flag('n');
-    cpu.af.high += cpu.de.high;
+    cpu.af.high = cpu.af.high.wrapping_add(cpu.de.high);
     cpu.update_flag('z', cpu.af.high == 0);
     cpu.update_flag('h', cpu.af.high & 0b1111 == 0);
     cpu.update_flag('c', cpu.af.high > 0);
@@ -2719,21 +2714,21 @@ fn add_a_d(cpu: &mut cpu::CPU, _: &mut bus::Bus) {
 
 fn add_a_e(cpu: &mut cpu::CPU, _: &mut bus::Bus) {
     cpu.clear_flag('n');
-    cpu.af.high += cpu.de.low;
+    cpu.af.high = cpu.af.high.wrapping_add(cpu.de.low);
     cpu.update_flag('z', cpu.af.high == 0);
     cpu.update_flag('h', cpu.af.high & 0b1111 == 0);
 }
 
 fn add_a_h(cpu: &mut cpu::CPU, _: &mut bus::Bus) {
     cpu.clear_flag('n');
-    cpu.af.high += cpu.hl.high;
+    cpu.af.high = cpu.af.high.wrapping_add(cpu.hl.high);
     cpu.update_flag('z', cpu.af.high == 0);
     cpu.update_flag('h', cpu.af.high & 0b1111 == 0);
 }
 
 fn add_a_l(cpu: &mut cpu::CPU, _: &mut bus::Bus) {
     cpu.clear_flag('n');
-    cpu.af.high += cpu.hl.low;
+    cpu.af.high = cpu.af.high.wrapping_add(cpu.hl.low);
     cpu.update_flag('z', cpu.af.high == 0);
     cpu.update_flag('h', cpu.af.high & 0b1111 == 0);
     cpu.update_flag('c', cpu.af.high > 0);
@@ -2741,7 +2736,7 @@ fn add_a_l(cpu: &mut cpu::CPU, _: &mut bus::Bus) {
 
 fn add_hl_ptr_to_a(cpu: &mut cpu::CPU, bus: &mut bus::Bus) {
     cpu.clear_flag('n');
-    cpu.af.high += cpu.fetch_byte(bus, cpu.hl.get_combined());
+    cpu.af.high = cpu.af.high.wrapping_add(bus.fetch_byte(cpu.hl.get_combined()));
     cpu.update_flag('z', cpu.af.high == 0);
     cpu.update_flag('h', cpu.af.high & 0b1111 == 0);
     cpu.update_flag('c', cpu.af.high > 0);
@@ -2749,7 +2744,7 @@ fn add_hl_ptr_to_a(cpu: &mut cpu::CPU, bus: &mut bus::Bus) {
 
 fn add_a_a(cpu: &mut cpu::CPU, _: &mut bus::Bus) {
     cpu.clear_flag('n');
-    cpu.af.high += cpu.af.high;
+    cpu.af.high = cpu.af.high.wrapping_add(cpu.af.high);
     cpu.update_flag('z', cpu.af.high == 0);
     cpu.update_flag('h', cpu.af.high & 0b1111 == 0);
     cpu.update_flag('c', cpu.af.high > 0);
