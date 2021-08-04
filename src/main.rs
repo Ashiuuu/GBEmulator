@@ -11,9 +11,10 @@ use sdl2::keyboard::Keycode;
 fn main() {
     let x_size: u32 = 160;
     let y_size: u32 = 144;
+    let scale: f32 = 2.0;
 
-    //let mut bus: bus::Bus = bus::Bus::new_bus(&String::from("Tetris.GB"));
-    let mut bus: bus::Bus = bus::Bus::new_bus(&String::from("cpu_instrs.gb"));
+    let mut bus: bus::Bus = bus::Bus::new_bus(&String::from("Tetris.GB"));
+    //let mut bus: bus::Bus = bus::Bus::new_bus(&String::from("cpu_instrs.gb"));
     let mut cpu = cpu::CPU::new_cpu();
     let mut gpu = gpu::GPU::new_gpu(x_size, y_size);
 
@@ -21,7 +22,7 @@ fn main() {
     let video_subsystem = sdl_context.video().unwrap();
     let mut event_pump = sdl_context.event_pump().expect("Failed to generate event pump !");
 
-    let window = video_subsystem.window("GB Emulator", x_size, y_size)
+    let window = video_subsystem.window("GB Emulator", (scale as u32) * x_size, (scale as u32) * y_size)
         .position_centered()
         .build()
         .unwrap();
@@ -30,13 +31,14 @@ fn main() {
     canvas.set_draw_color(sdl2::pixels::Color::RGB(255, 255, 255));
     canvas.clear();
     canvas.present();
+    canvas.set_scale(scale, scale).unwrap();
 
     let debugging = false;
-    let advanced_debug_mode = 2;
-    cpu.set_breakpoint(0x27c9);
+    let advanced_debug_mode = 0;
+    cpu.set_breakpoint(0x27c3);
 
     'main_loop: loop {
-        if debugging && cpu.pc <= 0x213 && cpu.pc >= 0x20b{
+        if debugging {
             println!("{:#x}", cpu.pc);
             let op = cpu.fetch_byte(&mut bus, cpu.pc);
             let instruction = &instructions::Instruction::SET[op as usize];

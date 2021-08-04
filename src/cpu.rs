@@ -78,7 +78,8 @@ impl CPU {
         println!("PC: {:#06x}", self.pc);
         println!("SP: {:#06x}", self.sp);
         println!("Memory: {:#04x} {:#04x}", bus.fetch_byte(self.pc + 1), bus.fetch_byte(self.pc + 2));
-        println!("Stack: {:#04x} {:#04x} {:#04x} {:#04x}\n", bus.fetch_byte(self.sp - 2), bus.fetch_byte(self.sp - 1), bus.fetch_byte(self.sp), bus.fetch_byte(self.sp + 1));
+        //println!("Stack: {:#04x} {:#04x} {:#04x} {:#04x}", bus.fetch_byte(self.sp - 2), bus.fetch_byte(self.sp - 1), bus.fetch_byte(self.sp), bus.fetch_byte(self.sp + 1));
+        println!("");
     }
 
     pub fn set_breakpoint(&mut self, b: u16) {

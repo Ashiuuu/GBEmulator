@@ -1826,8 +1826,7 @@ fn load_imm_bc(cpu: &mut cpu::CPU, bus: &mut bus::Bus) {
 
 fn load_val_bc_ptr(cpu: &mut cpu::CPU, bus: &mut bus::Bus) {
     // load 8 bit data into address pointed by BC
-    let val = cpu.fetch_byte(bus, cpu.pc);
-    cpu.set_byte(bus, cpu.bc.get_combined(), val);
+    bus.set_byte(cpu.bc.get_combined(), cpu.af.high);
 }
 
 fn inc_bc(cpu: &mut cpu::CPU, _: &mut bus::Bus) {
@@ -1964,8 +1963,7 @@ fn load_imm_de(cpu: &mut cpu::CPU, bus: &mut bus::Bus) {
 
 fn load_val_de_ptr(cpu: &mut cpu::CPU, bus: &mut bus::Bus) {
     // load 8 bit data into address pointed by DE
-    let val = cpu.fetch_byte(bus, cpu.pc);
-    cpu.set_byte(bus, cpu.de.get_combined(), val);
+    bus.set_byte(cpu.de.get_combined(), cpu.af.high);
 }
 
 fn inc_de(cpu: &mut cpu::CPU, _: &mut bus::Bus) {
@@ -2133,8 +2131,7 @@ fn load_imm_hl(cpu: &mut cpu::CPU, bus: &mut bus::Bus) {
 
 fn load_val_hl_ptr(cpu: &mut cpu::CPU, bus: &mut bus::Bus) {
     // load 8 bit data into address pointed by HL and increments HL
-    let val = cpu.fetch_byte(bus, cpu.pc);
-    cpu.set_byte(bus, cpu.hl.get_combined(), val);
+    bus.set_byte(cpu.hl.get_combined(), cpu.af.high);
     inc_hl(cpu, bus);
 }
 
@@ -2293,7 +2290,7 @@ fn load_imm_sp(cpu: &mut cpu::CPU, bus: &mut bus::Bus) {
 
 fn load_val_hl_ptr_dec(cpu: &mut cpu::CPU, bus: &mut bus::Bus) {
     // load A into address pointed by HL and decrements HL
-    cpu.set_byte(bus, cpu.hl.get_combined(), cpu.af.high);
+    bus.set_byte(cpu.hl.get_combined(), cpu.af.high);
     dec_hl(cpu, bus);
 }
 

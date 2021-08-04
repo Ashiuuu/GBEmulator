@@ -44,10 +44,6 @@ impl GPU {
                 let content = bus.fetch_byte(((dma << 8) + i) as u16);
                 bus.set_byte(0xFE00 + i, content);
             }
-            for i in 0..16 {
-                print!("{:02x} ", bus.fetch_byte(0x8000 + i));
-            }
-            println!("");
         }
 
         self.clock_cycles += 1;
@@ -102,18 +98,28 @@ impl GPU {
     }
 
     fn write_scanline(&self, bus: &bus::Bus, canvas: &mut sdl2::render::Canvas<sdl2::video::Window>) {
-        canvas.draw_point(sdl2::rect::Point::new(0, 0)).unwrap();
-
-        
         canvas.set_draw_color(sdl2::pixels::Color::BLACK);
-        for l in 0..3 {
-            for k in 0..20 {
-                let raw_sprite: Vec<u8> = (0..16).map(|i| bus.fetch_byte(l * 20 + k * 16 + GPU::VRAM_TILE_DATA_BEGIN + i)).collect();
-                for i in (0..16).step_by(2) {
-                    let pixels = raw_sprite[i] + raw_sprite[i + 1];
-                    for j in 0..8 {
-                        if pixels & (1 << j) != 0 {
-                            canvas.draw_point(sdl2::rect::Point::new((k * 8 + j) as i32, ((l + i as u16) as i32) / 2)).unwrap();
+        for line in 0..19 {
+
+            // printing one line of sprite data
+            for sprite in 0..20 { // 20 sprites per line
+                let raw_sprite: Vec<u8> = (0..16).map(|i| bus.fetch_byte((line * 20 + sprite) * 16 + GPU::VRAM_TILE_DATA_BEGIN + i)).collect();
+                for pair in (0..16).step_by(2) { // each sprite is 2 byte long
+                    for j in 0..8 { // each bit in a byte is a pixel
+                        let shift = 0b10000000 >> j; // scanning from left to right
+                        let raw_1: u8 = (raw_sprite[pair] & shift) >> (7 - j);
+                        let raw_2: u8 = (raw_sprite[pair + 1] & shift) >> (7 - j);
+                        let shade: u8 = raw_1 + (raw_2 << 1);
+                        match shade {
+                            3 => canvas.set_draw_color(sdl2::pixels::Color::BLACK),
+                            2 => canvas.set_draw_color(sdl2::pixels::Color::from((96, 96, 96))),
+                            1 => canvas.set_draw_color(sdl2::pixels::Color::from((192, 192, 192))),
+                            _ => canvas.set_draw_color(sdl2::pixels::Color::WHITE),
+                        };
+                        if shade != 0 {
+                            let pos_x: i32 = (sprite * 8 + j) as i32;
+                            let pos_y: i32 = (line * 8 + ((pair as u16) / 2)) as i32;
+                            canvas.draw_point(sdl2::rect::Point::new(pos_x, pos_y)).unwrap();
                         }
                     }
                 }
