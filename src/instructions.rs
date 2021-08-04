@@ -2243,14 +2243,9 @@ fn dec_hl(cpu: &mut cpu::CPU, _: &mut bus::Bus) {
 
 fn inc_l(cpu: &mut cpu::CPU, _: &mut bus::Bus) {
     // increment L register
-    cpu.hl.low += 1;
-    if cpu.hl.low == 0 {
-        cpu.set_flag('z'); // zero flag
-    }
-    if cpu.hl.low & 0b1111 == 0 {
-        // if the first 4 bytes resulted in a carry
-        cpu.set_flag('h'); // set half carry flag
-    }
+    cpu.hl.low = cpu.hl.low.wrapping_add(1);
+    cpu.update_flag('z', cpu.hl.low == 0);
+    cpu.update_flag('h', cpu.hl.low & 0b1111 == 0);
     cpu.set_flag('n'); // operation was addition
 }
 
@@ -3277,7 +3272,7 @@ fn add_a_d8(cpu: &mut cpu::CPU, bus: &mut bus::Bus) {
     // add d8 value to A
     cpu.clear_flag('n');
     let op = cpu.fetch_byte(bus, cpu.pc);
-    cpu.af.high += op;
+    cpu.af.high = cpu.af.high.wrapping_add(op);
     cpu.update_flag('z', cpu.af.high == 0);
     cpu.update_flag('h', cpu.af.high & 0b1111 == 0);
     cpu.update_flag('c', cpu.af.high > 0);

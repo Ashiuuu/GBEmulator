@@ -5,16 +5,23 @@ mod instructions2;
 mod gpu;
 
 use sdl2;
+use sdl2::event::Event;
+use sdl2::keyboard::Keycode;
 
 fn main() {
-    let mut bus: bus::Bus = bus::Bus::new_bus(&String::from("Tetris.GB"));
+    let x_size: u32 = 160;
+    let y_size: u32 = 144;
+
+    //let mut bus: bus::Bus = bus::Bus::new_bus(&String::from("Tetris.GB"));
+    let mut bus: bus::Bus = bus::Bus::new_bus(&String::from("cpu_instrs.gb"));
     let mut cpu = cpu::CPU::new_cpu();
-    let mut gpu = gpu::GPU::new_gpu();
+    let mut gpu = gpu::GPU::new_gpu(x_size, y_size);
 
     let sdl_context = sdl2::init().unwrap();
     let video_subsystem = sdl_context.video().unwrap();
+    let mut event_pump = sdl_context.event_pump().expect("Failed to generate event pump !");
 
-    let window = video_subsystem.window("GB Emulator", 160, 144)
+    let window = video_subsystem.window("GB Emulator", x_size, y_size)
         .position_centered()
         .build()
         .unwrap();
@@ -25,10 +32,10 @@ fn main() {
     canvas.present();
 
     let debugging = false;
-    let advanced_debug_mode = 0;
-    cpu.set_breakpoint(0x293);
+    let advanced_debug_mode = 2;
+    cpu.set_breakpoint(0x27c9);
 
-    loop {
+    'main_loop: loop {
         if debugging && cpu.pc <= 0x213 && cpu.pc >= 0x20b{
             println!("{:#x}", cpu.pc);
             let op = cpu.fetch_byte(&mut bus, cpu.pc);
@@ -39,12 +46,24 @@ fn main() {
             }
             println!("Y coord = {}", gpu.get_y_coord());
         }
-        gpu.tick(&mut bus);
-        cpu.tick(&mut bus, advanced_debug_mode);
-        /*let tile = (0..=16).map(|i| cpu.fetch_byte(&mut bus, 0x8000 + i));
-        for hex in tile {
-            print!("{:#x} ", hex);
+
+        /*if cpu.pc == 0x282a {
+            for i in 0..16 {
+                print!("{:02x} ", bus.fetch_byte(0x8000 + i));
+            }
+            println!("");
+            break 'main_loop;
+        }*/
+
+        for event in event_pump.poll_iter() {
+            match event {
+                Event::Quit { .. } => break 'main_loop,
+                Event::KeyDown { keycode: Some(Keycode::Escape), .. } => break 'main_loop,
+                _ => (),
+            };
         }
-        println!("");*/
+
+        gpu.tick(&mut bus, &mut canvas);
+        cpu.tick(&mut bus, advanced_debug_mode);
     }
 }
