@@ -145,6 +145,18 @@ impl CPU {
         };
 
         if (debugging != 0 && self.pc == self.breakpoint) || self.debug_flag == true {
+            /*let map: Vec<u8> = (0..1024).map(|i| bus.fetch_byte(0x9800 + i)).collect();
+            let mut count = 0;
+            for i in map {
+                print!("{:03} ", i);
+                if count == 31 {
+                    println!("");
+                    count = 0;
+                } else {
+                    count += 1;
+                }
+            }
+            panic!("\nEnd of dump");*/
             let mut test = false;
             if self.pc == 0x38 {
                 test = true;

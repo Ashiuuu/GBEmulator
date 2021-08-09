@@ -13,7 +13,9 @@ impl GPU {
     const LINE_VBLANK_END: u8 = 153;
 
     const VRAM_TILE_DATA_BEGIN: u16 = 0x8000;
-    const VRAM_TILE_DATA_END: u16 = 0x97FF;
+    const BG_MAP_1: u16 = 0x9800;
+    const BG_MAP_2: u16 = 0x9C00;
+    const BG_PALETTE: u16 = 0xFF47;
     const CONTROL_REGISTER: u16 = 0xFF40;
     const STATUS_REGISTER: u16 = 0xFF41;
     const SCROLL_Y: u16 = 0xFF42;
@@ -36,6 +38,19 @@ impl GPU {
     }
 
     pub fn tick(&mut self, bus: &mut bus::Bus, canvas: &mut sdl2::render::Canvas<sdl2::video::Window>) {
+        /*let control_reg = bus.fetch_byte(GPU::CONTROL_REGISTER);
+        let display_enable = control_reg & 0b10000000;
+        if display_enable == 0 {
+            canvas.set_draw_color(sdl2::pixels::Color::WHITE);
+            canvas.clear();
+            canvas.present();
+
+            self.current_line = 0;
+            self.clock_cycles = 0;
+            self.mode = 0;
+            return;
+        }*/
+
         // check if DMA transfer was started
         let dma = bus.fetch_byte(GPU::DMA_TRANSFER_REGISTER) as u16;
         if dma != 0 {
@@ -95,10 +110,10 @@ impl GPU {
 
         // update io ports
         bus.set_byte(GPU::Y_COORDINATE, self.current_line);
+        bus.set_byte(GPU::STATUS_REGISTER, self.mode);
     }
 
-    fn write_scanline(&self, bus: &bus::Bus, canvas: &mut sdl2::render::Canvas<sdl2::video::Window>) {
-        canvas.set_draw_color(sdl2::pixels::Color::BLACK);
+    fn dump_tileset(bus: &bus::Bus, canvas: &mut sdl2::render::Canvas<sdl2::video::Window>) {
         for line in 0..19 {
 
             // printing one line of sprite data
@@ -127,8 +142,65 @@ impl GPU {
         }
     }
 
+    fn choose_color_from_palette(&self, bus: &bus::Bus, canvas: &mut sdl2::render::Canvas<sdl2::video::Window>, color_nb: u8) {
+        let palette = bus.fetch_byte(GPU::BG_PALETTE);
+        let shade = match color_nb {
+            3 => (palette & 0b11000000) >> 6,
+            2 => (palette & 0b110000) >> 4,
+            1 => (palette & 0b1100) >> 2,
+            0 => palette & 0b11,
+            _ => panic!("Palette color_nb {} not valid !", color_nb),
+        };
+
+        match shade {
+            3 => canvas.set_draw_color(sdl2::pixels::Color::BLACK),
+            2 => canvas.set_draw_color(sdl2::pixels::Color::from((96, 96, 96))),
+            1 => canvas.set_draw_color(sdl2::pixels::Color::from((192, 192, 192))),
+            0 => canvas.set_draw_color(sdl2::pixels::Color::WHITE),
+            _ => panic!("Shade {} not valid!", shade),
+        };
+    }
+
+    fn render_background_line(&self, bus: &bus::Bus, canvas: &mut sdl2::render::Canvas<sdl2::video::Window>) {
+        let scroll_x = bus.fetch_byte(GPU::SCROLL_X);
+        let scroll_y = bus.fetch_byte(GPU::SCROLL_Y);
+
+        if self.current_line == 110 {
+            canvas.present();
+        }
+
+        let nb_line = (self.current_line.wrapping_add(scroll_y) / 8) % 32; // ith line of sprites
+        let sprites: Vec<u8> = (0..32).map(|i| bus.fetch_byte(GPU::BG_MAP_1 + ((nb_line as u16) * 32) + i)).collect(); // sprite line
+
+        for i in 0..self.x_size {
+            let nb_sprite = sprites[(((i as u8) + scroll_x) / 8) as usize];
+            let sprite: Vec<u8> = (0..16).map(|k| bus.fetch_byte(GPU::VRAM_TILE_DATA_BEGIN + ((16 * (nb_sprite as u16)) + k))).collect();
+            let pos_x_in_sprite = ((i as u8) + scroll_x) % 8;
+            let pos_y_in_sprite = self.current_line.wrapping_add(scroll_y) % 8;
+
+            // drawing the sprite
+            let shift = 0b10000000 >> pos_x_in_sprite;
+            let raw_1 = (sprite[(pos_y_in_sprite * 2) as usize] & shift) >> (7 - pos_x_in_sprite);
+            let raw_2 = sprite[(pos_y_in_sprite * 2 + 1) as usize] & shift >> (7 - pos_x_in_sprite);
+            let shade = raw_1 + (raw_2 << 1);
+
+            self.choose_color_from_palette(bus, canvas, shade);
+            canvas.draw_point(sdl2::rect::Point::new(i as i32, self.current_line as i32)).unwrap();
+        }
+    }
+
+    fn write_scanline(&self, bus: &bus::Bus, canvas: &mut sdl2::render::Canvas<sdl2::video::Window>) {
+        let control_reg = bus.fetch_byte(GPU::CONTROL_REGISTER);
+        let bg_display_flag = control_reg & 1;
+        if bg_display_flag != 0 {
+            self.render_background_line(bus, canvas);
+        }
+    }
+
     fn render_canvas(&self, canvas: &mut sdl2::render::Canvas<sdl2::video::Window>) {
         canvas.present();
+        let mut c = String::new();
+        //std::io::stdin().read_line(&mut c).expect("");
         canvas.set_draw_color(sdl2::pixels::Color::WHITE);
         canvas.clear();
     }
