@@ -88,6 +88,9 @@ impl CPU {
 
     pub fn tick(&mut self, bus: &mut bus::Bus, debugging: u8) {
         // execute a tick of the CPU
+        /*let timer = bus.fetch_byte(0xFF04); // timer register to be incremented
+        bus.set_byte(0xFF04, timer.wrapping_add(1));*/
+
         if self.clock_cycles_to_go > 0 {
             self.clock_cycles_to_go -= 1;
         } else {
@@ -138,7 +141,7 @@ impl CPU {
 
     fn execute_instruction(&mut self, bus: &mut bus::Bus, debugging: u8) {
         // fetch instruction byte on bus based on pc register
-        let op = self.fetch_byte(bus, self.pc);
+        let op = bus.fetch_byte(self.pc);
         let current_instruction = match op {
             0xCB => &instructions2::Instruction::SECOND_SET[op as usize],
             _ => &instructions::Instruction::SET[op as usize],
@@ -157,15 +160,11 @@ impl CPU {
                 }
             }
             panic!("\nEnd of dump");*/
-            let mut test = false;
-            if self.pc == 0x38 {
-                test = true;
-            }
             self.debug_flag = true;
             println!("{:#x} : {}", op, current_instruction.disassembly);
             self.dump_registers(bus);
             let mut cont = String::new();
-            if debugging == 2 || test == true {
+            if debugging == 2 {
                 std::io::stdin().read_line(&mut cont).expect("Unable to read from stdin !");
             }
         }
@@ -179,6 +178,10 @@ impl CPU {
             self.pc += current_instruction.op_len - 1;
         }
         self.clock_cycles_to_go += current_instruction.clock_cycles;
+
+        if self.pc == 0x393 && self.af.high == 1 {
+            self.debug_flag = true;
+        }
 
         // interrupts
         if self.ime == true {
@@ -211,18 +214,6 @@ impl CPU {
                 self.pc = 0x60;
             }
         }
-    }
-
-    pub fn fetch_byte(&self, bus: &mut bus::Bus, address: u16) -> u8 {
-        bus.fetch_byte(address)
-    }
-
-    pub fn set_byte(&mut self, bus: &mut bus::Bus, address: u16, data: u8) {
-        bus.set_byte(address, data);
-    }
-
-    pub fn set_word(&mut self, bus: &mut bus::Bus, address: u16, data: u16) {
-        bus.set_word(address, data);
     }
 
     pub fn push_stack(&mut self, bus: &mut bus::Bus, data: u16) {

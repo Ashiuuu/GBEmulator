@@ -3,8 +3,11 @@ mod cpu;
 mod instructions;
 mod instructions2;
 mod gpu;
+mod debugger;
 
 //use std::time::Duration;
+
+use hex;
 
 use sdl2;
 use sdl2::event::Event;
@@ -71,11 +74,14 @@ fn main() {
     let y_size: u32 = 144;
     let scale: f32 = 2.0;
 
-    let mut bus: bus::Bus = bus::Bus::new_bus(&String::from("Tetris.GB"));
-    //let mut bus: bus::Bus = bus::Bus::new_bus(&String::from("cpu_instrs.gb"));
+    let mut bus: bus::Bus = bus::Bus::new_bus(&String::from("roms/Tetris.GB"));
+    //let mut bus: bus::Bus = bus::Bus::new_bus(&String::from("roms/cpu_instrs.gb"));
     let mut cpu = cpu::CPU::new_cpu();
     let mut gpu = gpu::GPU::new_gpu(x_size, y_size);
     let mut keys = Keys::new_keys();
+
+    let mut debugger = debugger::Debugger::new_debugger();
+    debugger.start_paused();
 
     let sdl_context = sdl2::init().unwrap();
     let video_subsystem = sdl_context.video().unwrap();
@@ -92,35 +98,14 @@ fn main() {
     canvas.present();
     canvas.set_scale(scale, scale).unwrap();
 
-    let debugging = false;
-    let advanced_debug_mode = 0;
-    cpu.set_breakpoint(0x2d3);
-
-    /*let map: Vec<u8> = (0..360).map(|i| bus.fetch_byte(0x4A07 + i)).collect();
-    let mut count = 0;
-    for i in map {
-        print!("{:03} ", i);
-        if count == 19 {
-            println!("");
-            count = 0;
-        } else {
-            count += 1;
-        }
-    }
-    panic!("\nEnd of dump");*/
+    let advanced_debug_mode = 2;
+    cpu.set_breakpoint(0x27b0);
 
     'main_loop: loop {
-        if debugging {
-            println!("{:#x}", cpu.pc);
-            let op = cpu.fetch_byte(&mut bus, cpu.pc);
-            let instruction = &instructions::Instruction::SET[op as usize];
-            println!("[{:#x}] {} {:#x} {:#x}", cpu.fetch_byte(&mut bus, cpu.pc), instruction.disassembly, cpu.fetch_byte(&mut bus, cpu.pc + 1), cpu.fetch_byte(&mut bus, cpu.pc + 2));
-            if op == 0xf0 {
-                println!("0xff44 = {:#x}", bus.fetch_byte(0xff44));
-            }
-            println!("Y coord = {}", gpu.get_y_coord());
+        if debugger.is_paused() {
+            debugger.tick(&mut cpu, &mut bus, &mut gpu);
+            continue 'main_loop;
         }
-
         for event in event_pump.poll_iter() {
             match event {
                 Event::Quit { .. } => break 'main_loop,
@@ -129,6 +114,7 @@ fn main() {
             };
         }
 
+        debugger.tick(&mut cpu, &mut bus, &mut gpu);
         keys.update_register(&mut bus);
         gpu.tick(&mut bus, &mut canvas);
         cpu.tick(&mut bus, advanced_debug_mode);

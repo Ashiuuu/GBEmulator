@@ -165,16 +165,13 @@ impl GPU {
         let scroll_x = bus.fetch_byte(GPU::SCROLL_X);
         let scroll_y = bus.fetch_byte(GPU::SCROLL_Y);
 
-        if self.current_line == 110 {
-            canvas.present();
-        }
-
         let nb_line = (self.current_line.wrapping_add(scroll_y) / 8) % 32; // ith line of sprites
         let sprites: Vec<u8> = (0..32).map(|i| bus.fetch_byte(GPU::BG_MAP_1 + ((nb_line as u16) * 32) + i)).collect(); // sprite line
 
         for i in 0..self.x_size {
             let nb_sprite = sprites[(((i as u8) + scroll_x) / 8) as usize];
-            let sprite: Vec<u8> = (0..16).map(|k| bus.fetch_byte(GPU::VRAM_TILE_DATA_BEGIN + ((16 * (nb_sprite as u16)) + k))).collect();
+            let address_offset = 16 * (nb_sprite as u16);
+            let sprite: Vec<u8> = (0..16).map(|k| bus.fetch_byte(GPU::VRAM_TILE_DATA_BEGIN + address_offset + k)).collect();
             let pos_x_in_sprite = ((i as u8) + scroll_x) % 8;
             let pos_y_in_sprite = self.current_line.wrapping_add(scroll_y) % 8;
 
@@ -199,8 +196,6 @@ impl GPU {
 
     fn render_canvas(&self, canvas: &mut sdl2::render::Canvas<sdl2::video::Window>) {
         canvas.present();
-        let mut c = String::new();
-        //std::io::stdin().read_line(&mut c).expect("");
         canvas.set_draw_color(sdl2::pixels::Color::WHITE);
         canvas.clear();
     }
