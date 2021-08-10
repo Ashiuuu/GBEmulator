@@ -1427,7 +1427,7 @@ impl Instruction<'_> {
         Instruction {
             //0xca
             disassembly: "JP Z a16",
-            op_len: 1,
+            op_len: 3,
             clock_cycles: 4,
             execute: jp_z_a16,
         },
@@ -3487,7 +3487,7 @@ fn ld_a16_a(cpu: &mut cpu::CPU, bus: &mut bus::Bus) {
 }
 
 fn xor_d8(cpu: &mut cpu::CPU, bus: &mut bus::Bus) {
-    let op = cpu.fetch_byte(bus, cpu.pc);
+    let op = bus.fetch_byte(cpu.pc);
     cpu.af.high ^= op;
     cpu.clear_flag('n');
     cpu.clear_flag('h');
@@ -3504,19 +3504,19 @@ fn rst_5(cpu: &mut cpu::CPU, bus: &mut bus::Bus) {
 // ======================================================
 fn ld_ffa8_to_a(cpu: &mut cpu::CPU, bus: &mut bus::Bus) {
     // load content of memory location FFa8 into A register
-    let op = cpu.fetch_byte(bus, cpu.pc);
-    cpu.af.high = cpu.fetch_byte(bus, 0xFF00 + (op as u16));
+    let op = bus.fetch_byte(cpu.pc);
+    cpu.af.high = bus.fetch_byte(0xFF00 + (op as u16));
 }
 
 fn pop_af(cpu: &mut cpu::CPU, bus: &mut bus::Bus) {
-    cpu.af.low = cpu.fetch_byte(bus, cpu.sp);
+    cpu.af.low = bus.fetch_byte(cpu.sp);
     cpu.sp += 1;
-    cpu.af.high = cpu.fetch_byte(bus, cpu.sp);
+    cpu.af.high = bus.fetch_byte(cpu.sp);
     cpu.sp += 1;
 }
 
 fn ld_ffc_to_a(cpu: &mut cpu::CPU, bus: &mut bus::Bus) {
-    cpu.af.high = cpu.fetch_byte(bus, 0xFF00 + (cpu.bc.low as u16));
+    cpu.af.high = bus.fetch_byte(0xFF00 + (cpu.bc.low as u16));
 }
 
 fn di(cpu: &mut cpu::CPU, _: &mut bus::Bus) {

@@ -58,9 +58,9 @@ impl Keys {
 
     pub fn update_register(&self, bus: &mut bus::Bus) {
         let row = (bus.fetch_byte(0xFF00) & 0b110000) >> 4;
-        if row & 1 == 1 {
+        if row & 1 == 0 {
             bus.set_byte(0xFF00, self.row_1 & 0xF);
-        } else if row & 0b10 == 1 {
+        } else if row & 0b10 == 0 {
             bus.set_byte(0xFF00, self.row_2 & 0xF);
         }
     }
@@ -94,7 +94,7 @@ fn main() {
 
     let debugging = false;
     let advanced_debug_mode = 0;
-    cpu.set_breakpoint(0x2d1);
+    cpu.set_breakpoint(0x2d3);
 
     /*let map: Vec<u8> = (0..360).map(|i| bus.fetch_byte(0x4A07 + i)).collect();
     let mut count = 0;
