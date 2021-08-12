@@ -82,6 +82,7 @@ fn main() {
 
     let mut debugger = debugger::Debugger::new_debugger();
     debugger.start_paused();
+    let debug = true;
 
     let sdl_context = sdl2::init().unwrap();
     let video_subsystem = sdl_context.video().unwrap();
@@ -98,26 +99,22 @@ fn main() {
     canvas.present();
     canvas.set_scale(scale, scale).unwrap();
 
-    let advanced_debug_mode = 2;
-    cpu.set_breakpoint(0x27b0);
-
     'main_loop: loop {
-        if debugger.is_paused() {
-            debugger.tick(&mut cpu, &mut bus, &mut gpu);
-            continue 'main_loop;
+        if debug == true {
+            debugger.tick(&mut cpu, &mut bus, &mut gpu, &mut keys, &mut canvas);
+            //::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));
+        } else {
+            for event in event_pump.poll_iter() {
+                match event {
+                    Event::Quit { .. } => break 'main_loop,
+                    Event::KeyDown { keycode: Some(Keycode::Escape), .. } => break 'main_loop,
+                    Event::KeyDown { keycode: Some(Keycode::Space), .. } => debugger.set_paused(true),
+                    _ => keys.update_keys(event),
+                };
+            }
+            keys.update_register(&mut bus);
+            gpu.tick(&mut bus, &mut canvas);
+            cpu.tick(&mut bus);
         }
-        for event in event_pump.poll_iter() {
-            match event {
-                Event::Quit { .. } => break 'main_loop,
-                Event::KeyDown { keycode: Some(Keycode::Escape), .. } => break 'main_loop,
-                _ => keys.update_keys(event),
-            };
-        }
-
-        debugger.tick(&mut cpu, &mut bus, &mut gpu);
-        keys.update_register(&mut bus);
-        gpu.tick(&mut bus, &mut canvas);
-        cpu.tick(&mut bus, advanced_debug_mode);
-        //::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));
     }
 }

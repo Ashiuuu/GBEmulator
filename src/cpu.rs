@@ -45,10 +45,6 @@ pub struct CPU {
     pub stopped: bool,
     pub halted: bool,
     pub ime: bool,
-
-    // debugging tools
-    debug_flag: bool,
-    breakpoint: u16,
 }
 
 impl CPU {
@@ -64,29 +60,10 @@ impl CPU {
             stopped: false,
             halted: false,
             ime: false,
-            debug_flag: false,
-            breakpoint: 0,
         }
     }
-    
-    pub fn dump_registers(&self, bus: &bus::Bus) {
-        println!("BC: {}", self.bc.print());
-        println!("DE: {}", self.de.print());
-        println!("HL: {}", self.hl.print());
-        println!("A: {:#04x}", self.af.high);
-        println!("F: {:#04x}   |  Z: {}   H: {}   N: {}   C: {}", self.af.low, self.extract_flag('z'), self.extract_flag('h'), self.extract_flag('n'), self.extract_flag('c'));
-        println!("PC: {:#06x}", self.pc);
-        println!("SP: {:#06x}", self.sp);
-        println!("Memory: {:#04x} {:#04x}", bus.fetch_byte(self.pc + 1), bus.fetch_byte(self.pc + 2));
-        //println!("Stack: {:#04x} {:#04x} {:#04x} {:#04x}", bus.fetch_byte(self.sp - 2), bus.fetch_byte(self.sp - 1), bus.fetch_byte(self.sp), bus.fetch_byte(self.sp + 1));
-        println!("");
-    }
 
-    pub fn set_breakpoint(&mut self, b: u16) {
-        self.breakpoint = b;
-    }
-
-    pub fn tick(&mut self, bus: &mut bus::Bus, debugging: u8) {
+    pub fn tick(&mut self, bus: &mut bus::Bus) {
         // execute a tick of the CPU
         /*let timer = bus.fetch_byte(0xFF04); // timer register to be incremented
         bus.set_byte(0xFF04, timer.wrapping_add(1));*/
@@ -94,8 +71,12 @@ impl CPU {
         if self.clock_cycles_to_go > 0 {
             self.clock_cycles_to_go -= 1;
         } else {
-            self.execute_instruction(bus, debugging);
+            self.execute_instruction(bus);
         }
+    }
+
+    pub fn get_clock_cycles(&self) -> u8 {
+        self.clock_cycles_to_go
     }
 
     pub fn extract_flag(&self, c: char) -> bool {
@@ -139,7 +120,7 @@ impl CPU {
         }
     }
 
-    fn execute_instruction(&mut self, bus: &mut bus::Bus, debugging: u8) {
+    fn execute_instruction(&mut self, bus: &mut bus::Bus) {
         // fetch instruction byte on bus based on pc register
         let op = bus.fetch_byte(self.pc);
         let current_instruction = match op {
@@ -147,27 +128,6 @@ impl CPU {
             _ => &instructions::Instruction::SET[op as usize],
         };
 
-        if (debugging != 0 && self.pc == self.breakpoint) || self.debug_flag == true {
-            /*let map: Vec<u8> = (0..1024).map(|i| bus.fetch_byte(0x9800 + i)).collect();
-            let mut count = 0;
-            for i in map {
-                print!("{:03} ", i);
-                if count == 31 {
-                    println!("");
-                    count = 0;
-                } else {
-                    count += 1;
-                }
-            }
-            panic!("\nEnd of dump");*/
-            self.debug_flag = true;
-            println!("{:#x} : {}", op, current_instruction.disassembly);
-            self.dump_registers(bus);
-            let mut cont = String::new();
-            if debugging == 2 {
-                std::io::stdin().read_line(&mut cont).expect("Unable to read from stdin !");
-            }
-        }
         // identify instruction and execute it
         self.pc += 1;
         let previous_pc = self.pc;
@@ -178,10 +138,6 @@ impl CPU {
             self.pc += current_instruction.op_len - 1;
         }
         self.clock_cycles_to_go += current_instruction.clock_cycles;
-
-        if self.pc == 0x393 && self.af.high == 1 {
-            self.debug_flag = true;
-        }
 
         // interrupts
         if self.ime == true {

@@ -113,7 +113,7 @@ impl GPU {
         bus.set_byte(GPU::STATUS_REGISTER, self.mode);
     }
 
-    fn dump_tileset(bus: &bus::Bus, canvas: &mut sdl2::render::Canvas<sdl2::video::Window>) {
+    pub fn dump_tileset(bus: &bus::Bus, canvas: &mut sdl2::render::Canvas<sdl2::video::Window>) {
         for line in 0..19 {
 
             // printing one line of sprite data
