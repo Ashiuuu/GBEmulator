@@ -7,13 +7,13 @@ mod debugger;
 
 //use std::time::Duration;
 
-use hex;
+//use hex;
 
 use sdl2;
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 
-struct Keys {
+pub struct Keys {
     row_1: u8,
     row_2: u8,
 }
