@@ -38,7 +38,7 @@ impl GPU {
     }
 
     pub fn tick(&mut self, bus: &mut bus::Bus, canvas: &mut sdl2::render::Canvas<sdl2::video::Window>) {
-        /*let control_reg = bus.fetch_byte(GPU::CONTROL_REGISTER);
+        let control_reg = bus.fetch_byte(GPU::CONTROL_REGISTER);
         let display_enable = control_reg & 0b10000000;
         if display_enable == 0 {
             canvas.set_draw_color(sdl2::pixels::Color::WHITE);
@@ -49,7 +49,7 @@ impl GPU {
             self.clock_cycles = 0;
             self.mode = 0;
             return;
-        }*/
+        }
 
         // check if DMA transfer was started
         let dma = bus.fetch_byte(GPU::DMA_TRANSFER_REGISTER) as u16;

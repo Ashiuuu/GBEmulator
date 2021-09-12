@@ -398,8 +398,8 @@ l029a:  ldi     a,(hl)          ; 029a 2a   *
         ldh     (6),a           ; 02c2 e0 06   `.
 
 ; Read buttons & return values
-l02c4:  call    l29a6           ; 02c4 cd a6 29   M&)
-        call    l02f8           ; 02c7 cd f8 02   Mx.
+l02c4:  call    READ_BUTTONS           ; 02c4 cd a6 29   M&)
+        call    MAIN_SWITCH           ; 02c7 cd f8 02   Mx.
         call    l7ff0           ; 02ca cd f0 7f   Mp.
 ; If all arrow keys are down at the
 ; same time, then jump to 21b
@@ -433,7 +433,7 @@ l02ed:  ldh     a,(85h)         ; 02ed f0 85   p.
         ldh     (85h),a         ; 02f3 e0 85   `.
         jp      l02c4           ; 02f5 c3 c4 02   CD.
 
-l02f8:  ldh     a,(0e1h)        ; 02f8 f0 e1   pa
+MAIN_SWITCH:  ldh     a,(0e1h)        ; 02f8 f0 e1   pa
         rst     28h             ; 02fa ef   o
         .dw     l1bce           ; 02fb ce 1b   N.
         .dw     l1ce2           ; 02fd e2 1c   b.
@@ -496,7 +496,7 @@ l0369:  call    SHUTDOWN_LCD           ; 0369 cd 20 28   M (
         call    COPY_CHAR_SET           ; 036c cd d7 27   MW'
         ld      de,l4a07        ; 036f 11 07 4a   ..J
         call    l27eb           ; 0372 cd eb 27   Mk'
-        call    l178a           ; 0375 cd 8a 17   M..
+        call    CLEAR_C000_TO_C09F           ; 0375 cd 8a 17   M..
         ld      hl,0c300h       ; 0378 21 00 c3   !.C
         ld      de,l6450        ; 037b 11 50 64   .Pd
 l037e:  ld      a,(de)          ; 037e 1a   .
@@ -570,7 +570,7 @@ l03e9:  ldi     (hl),a          ; 03e9 22   "
         jr      nz,l03e9        ; 03eb 20 fc    |
         ld      de,l4b6f        ; 03ed 11 6f 4b   .oK
         call    l27eb           ; 03f0 cd eb 27   Mk'
-        call    l178a           ; 03f3 cd 8a 17   M..
+        call    CLEAR_C000_TO_C09F           ; 03f3 cd 8a 17   M..
         ld      hl,0c000h       ; 03f6 21 00 c0   !.@
         ld      (hl),80h        ; 03f9 36 80   6.
         inc     l               ; 03fb 2c   ,
@@ -632,7 +632,7 @@ l045a:  ldh     (0e4h),a        ; 045a e0 e4   `d
         call    l27ad           ; 0463 cd ad 27   M-'
         ld      de,l4cd7        ; 0466 11 d7 4c   .WL
         call    l27eb           ; 0469 cd eb 27   Mk'
-        call    l178a           ; 046c cd 8a 17   M..
+        call    CLEAR_C000_TO_C09F           ; 046c cd 8a 17   M..
         ld      a,0d3h          ; 046f 3e d3   >S
         ldh     (40h),a         ; 0471 e0 40   `@
         ret                     ; 0473 c9   I
@@ -955,7 +955,7 @@ l065d:  ldh     (0cfh),a        ; 065d e0 cf   `O
         ldh     (0ceh),a        ; 0661 e0 ce   `N
         ret                     ; 0663 c9   I
 
-l0664:  call    l178a           ; 0664 cd 8a 17   M..
+l0664:  call    CLEAR_C000_TO_C09F           ; 0664 cd 8a 17   M..
         ld      a,16h           ; 0667 3e 16   >.
         ldh     (0e1h),a        ; 0669 e0 e1   `a
         ret                     ; 066b c9   I
@@ -986,7 +986,7 @@ l0696:  call    SHUTDOWN_LCD           ; 0696 cd 20 28   M (
         call    l27ad           ; 0699 cd ad 27   M-'
         ld      de,l5214        ; 069c 11 14 52   ..R
         call    l27eb           ; 069f cd eb 27   Mk'
-        call    l178a           ; 06a2 cd 8a 17   M..
+        call    CLEAR_C000_TO_C09F           ; 06a2 cd 8a 17   M..
         ld      a,2fh           ; 06a5 3e 2f   >/
         call    l1fdd           ; 06a7 cd dd 1f   M].
         ld      a,3             ; 06aa 3e 03   >.
@@ -1081,7 +1081,7 @@ l075f:  ldh     a,(0cch)        ; 075f f0 cc   pL
         ldh     a,(0cfh)        ; 0764 f0 cf   pO
         cp      60h             ; 0766 fe 60   .`
         jr      nz,l07a2        ; 0768 20 38    8
-l076a:  call    l178a           ; 076a cd 8a 17   M..
+l076a:  call    CLEAR_C000_TO_C09F           ; 076a cd 8a 17   M..
 l076d:  ldh     a,(0d6h)        ; 076d f0 d6   pV
         and     a               ; 076f a7   '
         jr      nz,l078a        ; 0770 20 18    .
@@ -1188,7 +1188,7 @@ l0828:  xor     a               ; 0828 af   /
         call    l1ff2           ; 0848 cd f2 1f   Mr.
         xor     a               ; 084b af   /
         ldh     (0e3h),a        ; 084c e0 e3   `c
-        call    l178a           ; 084e cd 8a 17   M..
+        call    CLEAR_C000_TO_C09F           ; 084e cd 8a 17   M..
         ld      de,l537c        ; 0851 11 7c 53   .|S
         push    de              ; 0854 d5   U
         ld      a,1             ; 0855 3e 01   >.
@@ -2314,7 +2314,7 @@ l1052:  ldh     a,(0dbh)        ; 1052 f0 db   p[
         call    l10d8           ; 105f cd d8 10   MX.
 l1062:  ld      a,0d3h          ; 1062 3e d3   >S
         ldh     (40h),a         ; 1064 e0 40   `@
-        call    l178a           ; 1066 cd 8a 17   M..
+        call    CLEAR_C000_TO_C09F           ; 1066 cd 8a 17   M..
         ret                     ; 1069 c9   I
 
 l106a:  ldh     a,(0a0h)        ; 106a f0 a0   p 
@@ -2421,7 +2421,7 @@ l1112:  ld      a,1             ; 1112 3e 01   >.
         ldh     a,(0a6h)        ; 1116 f0 a6   p&
         and     a               ; 1118 a7   '
         ret     nz              ; 1119 c0   @
-        call    l178a           ; 111a cd 8a 17   M..
+        call    CLEAR_C000_TO_C09F           ; 111a cd 8a 17   M..
         xor     a               ; 111d af   /
         ldh     (0efh),a        ; 111e e0 ef   `o
         ld      b,27h           ; 1120 06 27   .'
@@ -2862,7 +2862,7 @@ l144f:  call    SHUTDOWN_LCD           ; 144f cd 20 28   M (
         call    l27ad           ; 1452 cd ad 27   M-'
         ld      de,l4cd7        ; 1455 11 d7 4c   .WL
         call    l27eb           ; 1458 cd eb 27   Mk'
-        call    l178a           ; 145b cd 8a 17   M..
+        call    CLEAR_C000_TO_C09F           ; 145b cd 8a 17   M..
         ld      hl,0c200h       ; 145e 21 00 c2   !.B
         ld      de,l26cf        ; 1461 11 cf 26   .O&
         ld      c,2             ; 1464 0e 02   ..
@@ -3029,7 +3029,7 @@ l157b:  call    SHUTDOWN_LCD           ; 157b cd 20 28   M (
         ld      de,l4e3f        ; 157e 11 3f 4e   .?N
         call    l27eb           ; 1581 cd eb 27   Mk'
         call    l18fc           ; 1584 cd fc 18   M|.
-        call    l178a           ; 1587 cd 8a 17   M..
+        call    CLEAR_C000_TO_C09F           ; 1587 cd 8a 17   M..
         ld      hl,0c200h       ; 158a 21 00 c2   !.B
         ld      de,l26db        ; 158d 11 db 26   .[&
         ld      c,1             ; 1590 0e 01   ..
@@ -3108,7 +3108,7 @@ l1615:  .db     40h,30h,40h,40h,40h,50h,40h,60h,40h,70h,50h,30h,50h     ; 1615 4
 l1629:  call    SHUTDOWN_LCD           ; 1629 cd 20 28   M (
         ld      de,l4fa7        ; 162c 11 a7 4f   .'O
         call    l27eb           ; 162f cd eb 27   Mk'
-        call    l178a           ; 1632 cd 8a 17   M..
+        call    CLEAR_C000_TO_C09F           ; 1632 cd 8a 17   M..
         ld      hl,0c200h       ; 1635 21 00 c2   !.B
         ld      de,l26e1        ; 1638 11 e1 26   .a&
         ld      c,2             ; 163b 0e 02   ..
@@ -3295,7 +3295,7 @@ l1779:  ld      a,(de)          ; 1779 1a   .
         ret                     ; 1789 c9   I
 
 ; Fill c000 to c09f with 0
-l178a:  xor     a               ; 178a af   /
+CLEAR_C000_TO_C09F:  xor     a               ; 178a af   /
         ld      hl,0c000h       ; 178b 21 00 c0   !.@
         ld      b,0a0h          ; 178e 06 a0   . 
 l1790:  ldi     (hl),a          ; 1790 22   "
@@ -3729,7 +3729,7 @@ l1a07:  call    SHUTDOWN_LCD           ; 1a07 cd 20 28   M (
         call    l2651           ; 1a20 cd 51 26   MQ&
         xor     a               ; 1a23 af   /
         ldh     (0e3h),a        ; 1a24 e0 e3   `c
-        call    l178a           ; 1a26 cd 8a 17   M..
+        call    CLEAR_C000_TO_C09F           ; 1a26 cd 8a 17   M..
         ldh     a,(0c0h)        ; 1a29 f0 c0   p@
         ld      de,l3ff7        ; 1a2b 11 f7 3f   .w?
         ld      hl,0ffc3h       ; 1a2e 21 c3 ff   !C.
@@ -4224,7 +4224,7 @@ l1dce:  ldh     a,(0a6h)        ; 1dce f0 a6   p&
         ld      hl,0c802h       ; 1dd2 21 02 c8   !.H
         ld      de,l510f        ; 1dd5 11 0f 51   ..Q
         call    l2804           ; 1dd8 cd 04 28   M.(
-        call    l178a           ; 1ddb cd 8a 17   M..
+        call    CLEAR_C000_TO_C09F           ; 1ddb cd 8a 17   M..
         ld      hl,0c200h       ; 1dde 21 00 c2   !.B
         ld      de,l2735        ; 1de1 11 35 27   .5'
         ld      c,0ah           ; 1de4 0e 0a   ..
@@ -4315,7 +4315,7 @@ l1e6a:  pop     hl              ; 1e6a e1   a
         ld      a,(0dfe9h)      ; 1e74 fa e9 df   zi_
         and     a               ; 1e77 a7   '
         ret     nz              ; 1e78 c0   @
-        call    l178a           ; 1e79 cd 8a 17   M..
+        call    CLEAR_C000_TO_C09F           ; 1e79 cd 8a 17   M..
         ldh     a,(0c4h)        ; 1e7c f0 c4   pD
         cp      5               ; 1e7e fe 05   ..
         ld      a,26h           ; 1e80 3e 26   >&
@@ -5763,7 +5763,7 @@ l2976:  .db     19h,15h,0eh,0ah,1ch,0eh,2fh,2fh,29h,29h,29h,29h,29h     ; 2976 1
 ;  $40 - Select  $4 - Up
 ;  $20 - B       $2 - Left
 ;  $10 - A       $1 - Right
-l29a6:  ld      a,20h           ; 29a6 3e 20   > 
+READ_BUTTONS:  ld      a,20h           ; 29a6 3e 20   > 
         ldh     (0),a           ; 29a8 e0 00   `.
         ldh     a,(0)           ; 29aa f0 00   p.
         ldh     a,(0)           ; 29ac f0 00   p.
@@ -7252,13 +7252,13 @@ l6450:  .db     10h,18h,0,4,8,0,4,8,8,0,4,14h,10h,8,10h,10h,14h,18h     ; 6450 1
         .db     18h,0,0ch,8,0,18h,10h,14h,14h,18h,8     ; 6475 18 00 0c 08 00 18 10 14 14 18 08   ...........
 
 l6480:  .dw     l65aa,l65c6,l66fc,l6628,l6734,l66af,l65f1,l6654 ; 6480 aa 65 c6 65 fc 66 28 66 34 67 af 66 f1 65 54 66   *eFe|f(f4g/fqeTf
-l6490:  .dw     l65b2,l65ce,l6714,l65ce,l65ce,l66c3,l65f7,l6660 ; 6490 b2 65 ce 65 14 67 ce 65 ce 65 c3 66 f7 65 60 66   2eNe.gNeNeCfwe`f
+[SOME_DATA]:  .dw     l65b2,l65ce,l6714,l65ce,l65ce,l66c3,l65f7,l6660 ; 6490 b2 65 ce 65 14 67 ce 65 ce 65 c3 66 f7 65 60 66   2eNe.gNeNeCfwe`f
 l64a0:  .dw     l67d4,l67dc,l679d,l67a5 ; 64a0 d4 67 dc 67 9d 67 a5 67   Tg\g.g%g
 l64a8:  .dw     l67e4,l67e4,l67e4,l67ad ; 64a8 e4 67 e4 67 e4 67 ad 67   dgdgdg-g
 l64b0:  .dw     l6f3f,l6f4a,l6f55,l6f60,l6f6b,l6f76,l6f81,l6f8c,l6f97   ; 64b0 3f 6f 4a 6f 55 6f 60 6f 6b 6f 76 6f 81 6f 8c 6f 97 6f   ?oJoUo`okovo.o.o.o
         .dw     l6fa2,l6fad,l6fb8,l6fc3,l6fce,l6fd9,l6fe4,l6fef ; 64c2 a2 6f ad 6f b8 6f c3 6f ce 6f d9 6f e4 6f ef 6f   "o-o8oCoNoYodooo
 
-l64d2:  ret                     ; 64d2 c9   I
+DOES_NOTHING:  ret                     ; 64d2 c9   I
 
 l64d3:  push    af              ; 64d3 f5   u
         push    bc              ; 64d4 c5   E
@@ -7280,7 +7280,7 @@ l64e8:  ldh     a,(0e4h)        ; 64e8 f0 e4   pd
         ld      (0dfe8h),a      ; 64f1 ea e8 df   jh_
         ld      (0dff0h),a      ; 64f4 ea f0 df   jp_
         ld      (0dff8h),a      ; 64f7 ea f8 df   jx_
-l64fa:  call    l64d2           ; 64fa cd d2 64   MRd
+l64fa:  call    DOES_NOTHING           ; 64fa cd d2 64   MRd
         call    l69dd           ; 64fd cd dd 69   M]i
         call    l69fd           ; 6500 cd fd 69   M}i
         call    l683c           ; 6503 cd 3c 68   M<h
@@ -7931,7 +7931,7 @@ l69f0:  inc     e               ; 69f0 1c   .
         ld      a,(de)          ; 69f1 1a   .
         and     a               ; 69f2 a7   '
         jr      z,l69fc         ; 69f3 28 07   (.
-        ld      hl,l6490        ; 69f5 21 90 64   !.d
+        ld      hl,[SOME_DATA]        ; 69f5 21 90 64   !.d
         call    l697c           ; 69f8 cd 7c 69   M|i
         jp      (hl)            ; 69fb e9   i
 
