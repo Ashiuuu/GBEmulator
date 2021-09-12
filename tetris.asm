@@ -295,14 +295,14 @@ l021b:  ld      a,1             ; 021b 3e 01   >.
         ldh     (2),a           ; 022d e0 02   `.
 ; Set LCD control to Operation
         ld      a,80h           ; 022f 3e 80   >.
-        ldh     (40h),a         ; 0231 e0 40   `@
+        ldh     LCD_CONTROL_REG,a         ; 0231 e0 40   `@
 ; Loop until LCDC Y-Coord = 148
 l0233:  ldh     a,(44h)         ; 0233 f0 44   pD
         cp      94h             ; 0235 fe 94   ..
         jr      nz,l0233        ; 0237 20 fa    z
 ; Set LCD control to Stop completely
         ld      a,3             ; 0239 3e 03   >.
-        ldh     (40h),a         ; 023b e0 40   `@
+        ldh     LCD_CONTROL_REG,a         ; 023b e0 40   `@
 ; Setup colors for Background & Sprites
         ld      a,0e4h          ; 023d 3e e4   >d
         ldh     (47h),a         ; 023f e0 47   `G
@@ -386,7 +386,7 @@ l029a:  ldi     a,(hl)          ; 029a 2a   *
         ldh     (0e1h),a        ; 02b4 e0 e1   `a
 ; Set LCD control to Operation
         ld      a,80h           ; 02b6 3e 80   >.
-        ldh     (40h),a         ; 02b8 e0 40   `@
+        ldh     LCD_CONTROL_REG,a         ; 02b8 e0 40   `@
         ei                      ; 02ba fb   {
         xor     a               ; 02bb af   /
 ; Clear all interrupt flags
@@ -506,7 +506,7 @@ l037e:  ld      a,(de)          ; 037e 1a   .
         cp      0c4h            ; 0382 fe c4   .D
         jr      nz,l037e        ; 0384 20 f8    x
         ld      a,0d3h          ; 0386 3e d3   >S
-        ldh     (40h),a         ; 0388 e0 40   `@
+        ldh     LCD_CONTROL_REG,a         ; 0388 e0 40   `@
 ; This is responsible for the credit screen ignoring the start
 ; button for so long. Lower this value to make it respond sooner.
         ld      a,0fah          ; 038a 3e fa   >z
@@ -580,7 +580,7 @@ l03e9:  ldi     (hl),a          ; 03e9 22   "
         ld      a,3             ; 0401 3e 03   >.
         ld      (0dfe8h),a      ; 0403 ea e8 df   jh_
         ld      a,0d3h          ; 0406 3e d3   >S
-        ldh     (40h),a         ; 0408 e0 40   `@
+        ldh     LCD_CONTROL_REG,a         ; 0408 e0 40   `@
         ld      a,7             ; 040a 3e 07   >.
         ldh     (0e1h),a        ; 040c e0 e1   `a
         ld      a,7dh           ; 040e 3e 7d   >}
@@ -634,7 +634,7 @@ l045a:  ldh     (0e4h),a        ; 045a e0 e4   `d
         call    l27eb           ; 0469 cd eb 27   Mk'
         call    CLEAR_C000_TO_C09F           ; 046c cd 8a 17   M..
         ld      a,0d3h          ; 046f 3e d3   >S
-        ldh     (40h),a         ; 0471 e0 40   `@
+        ldh     LCD_CONTROL_REG,a         ; 0471 e0 40   `@
         ret                     ; 0473 c9   I
 
 ; This routine is not used.
@@ -1012,7 +1012,7 @@ l06c8:  ldi     (hl),a          ; 06c8 22   "
         jp      nz,l076d        ; 06cf c2 6d 07   Bm.
         call    l1517           ; 06d2 cd 17 15   M..
         ld      a,0d3h          ; 06d5 3e d3   >S
-        ldh     (40h),a         ; 06d7 e0 40   `@
+        ldh     LCD_CONTROL_REG,a         ; 06d7 e0 40   `@
         ld      hl,0c080h       ; 06d9 21 80 c0   !.@
         ld      de,l0705        ; 06dc 11 05 07   ...
         ld      b,20h           ; 06df 06 20   . 
@@ -1234,7 +1234,7 @@ l08a4:  ld      hl,98b0h        ; 08a4 21 b0 98   !0.
         ld      a,77h           ; 08b3 3e 77   >w
         ldh     (0c0h),a        ; 08b5 e0 c0   `@
         ld      a,0d3h          ; 08b7 3e d3   >S
-        ldh     (40h),a         ; 08b9 e0 40   `@
+        ldh     LCD_CONTROL_REG,a         ; 08b9 e0 40   `@
         ld      a,19h           ; 08bb 3e 19   >.
         ldh     (0e1h),a        ; 08bd e0 e1   `a
         ld      a,1             ; 08bf 3e 01   >.
@@ -2313,7 +2313,7 @@ l1052:  ldh     a,(0dbh)        ; 1052 f0 db   p[
         ld      b,6             ; 105d 06 06   ..
         call    l10d8           ; 105f cd d8 10   MX.
 l1062:  ld      a,0d3h          ; 1062 3e d3   >S
-        ldh     (40h),a         ; 1064 e0 40   `@
+        ldh     LCD_CONTROL_REG,a         ; 1064 e0 40   `@
         call    CLEAR_C000_TO_C09F           ; 1066 cd 8a 17   M..
         ret                     ; 1069 c9   I
 
@@ -2493,7 +2493,7 @@ l1167:  call    l11b2           ; 1167 cd b2 11   M2.
         ld      a,3             ; 119b 3e 03   >.
         call    l2673           ; 119d cd 73 26   Ms&
         ld      a,0dbh          ; 11a0 3e db   >[
-        ldh     (40h),a         ; 11a2 e0 40   `@
+        ldh     LCD_CONTROL_REG,a         ; 11a2 e0 40   `@
         ld      a,0bbh          ; 11a4 3e bb   >;
         ldh     (0a6h),a        ; 11a6 e0 a6   `&
         ld      a,27h           ; 11a8 3e 27   >'
@@ -2686,7 +2686,7 @@ l1305:  ldh     a,(0a6h)        ; 1305 f0 a6   p&
         call    l27ad           ; 130c cd ad 27   M-'
         call    l2293           ; 130f cd 93 22   M."
         ld      a,93h           ; 1312 3e 93   >.
-        ldh     (40h),a         ; 1314 e0 40   `@
+        ldh     LCD_CONTROL_REG,a         ; 1314 e0 40   `@
         ld      a,5             ; 1316 3e 05   >.
         ldh     (0e1h),a        ; 1318 e0 e1   `a
         ret                     ; 131a c9   I
@@ -2710,7 +2710,7 @@ l1324:  call    l11b2           ; 1324 cd b2 11   M2.
         xor     a               ; 133c af   /
         ldh     (0f3h),a        ; 133d e0 f3   `s
         ld      a,0dbh          ; 133f 3e db   >[
-        ldh     (40h),a         ; 1341 e0 40   `@
+        ldh     LCD_CONTROL_REG,a         ; 1341 e0 40   `@
         ld      a,0bbh          ; 1343 3e bb   >;
         ldh     (0a6h),a        ; 1345 e0 a6   `&
         ld      a,2fh           ; 1347 3e 2f   >/
@@ -2811,7 +2811,7 @@ l13e5:  call    SHUTDOWN_LCD           ; 13e5 cd 20 28   M (
         call    l7ff3           ; 13eb cd f3 7f   Ms.
         call    l2293           ; 13ee cd 93 22   M."
         ld      a,93h           ; 13f1 3e 93   >.
-        ldh     (40h),a         ; 13f3 e0 40   `@
+        ldh     LCD_CONTROL_REG,a         ; 13f3 e0 40   `@
         ld      a,10h           ; 13f5 3e 10   >.
         ldh     (0e1h),a        ; 13f7 e0 e1   `a
         ret                     ; 13f9 c9   I
@@ -2881,7 +2881,7 @@ l147d:  ld      (de),a          ; 147d 12   .
         call    l2671           ; 147e cd 71 26   Mq&
         call    l1517           ; 1481 cd 17 15   M..
         ld      a,0d3h          ; 1484 3e d3   >S
-        ldh     (40h),a         ; 1486 e0 40   `@
+        ldh     LCD_CONTROL_REG,a         ; 1486 e0 40   `@
         ld      a,0eh           ; 1488 3e 0e   >.
         ldh     (0e1h),a        ; 148a e0 e1   `a
 l148c:  ret                     ; 148c c9   I
@@ -3042,7 +3042,7 @@ l157b:  call    SHUTDOWN_LCD           ; 157b cd 20 28   M (
         call    l1795           ; 15a3 cd 95 17   M..
         call    l18ca           ; 15a6 cd ca 18   MJ.
         ld      a,0d3h          ; 15a9 3e d3   >S
-        ldh     (40h),a         ; 15ab e0 40   `@
+        ldh     LCD_CONTROL_REG,a         ; 15ab e0 40   `@
         ld      a,11h           ; 15ad 3e 11   >.
         ldh     (0e1h),a        ; 15af e0 e1   `a
         ldh     a,(0c7h)        ; 15b1 f0 c7   pG
@@ -3125,7 +3125,7 @@ l1629:  call    SHUTDOWN_LCD           ; 1629 cd 20 28   M (
         call    l17af           ; 1659 cd af 17   M/.
         call    l18ca           ; 165c cd ca 18   MJ.
         ld      a,0d3h          ; 165f 3e d3   >S
-        ldh     (40h),a         ; 1661 e0 40   `@
+        ldh     LCD_CONTROL_REG,a         ; 1661 e0 40   `@
         ld      a,13h           ; 1663 3e 13   >.
         ldh     (0e1h),a        ; 1665 e0 e1   `a
         ldh     a,(0c7h)        ; 1667 f0 c7   pG
@@ -3818,7 +3818,7 @@ l1ad6:  ld      a,b             ; 1ad6 78   x
         ld      hl,9a02h        ; 1ada 21 02 9a   !..
         call    l1b68           ; 1add cd 68 1b   Mh.
 l1ae0:  ld      a,0d3h          ; 1ae0 3e d3   >S
-        ldh     (40h),a         ; 1ae2 e0 40   `@
+        ldh     LCD_CONTROL_REG,a         ; 1ae2 e0 40   `@
         xor     a               ; 1ae4 af   /
         ldh     (0e1h),a        ; 1ae5 e0 e1   `a
         ret                     ; 1ae7 c9   I
@@ -5722,9 +5722,9 @@ SHUTDOWN_LCD:  ldh     a,(0ffh)        ; 2820 f0 ff   p.
 l2828:  ldh     a,(44h)         ; 2828 f0 44   pD
         cp      91h             ; 282a fe 91   ..
         jr      nz,l2828        ; 282c 20 fa    z
-        ldh     a,(40h)         ; 282e f0 40   p@
+        ldh     a,LCD_CONTROL_REG         ; 282e f0 40   p@
         and     7fh             ; 2830 e6 7f   f.
-        ldh     (40h),a         ; 2832 e0 40   `@
+        ldh     LCD_CONTROL_REG,a         ; 2832 e0 40   `@
         ldh     a,(0a1h)        ; 2834 f0 a1   p!
         ldh     (0ffh),a        ; 2836 e0 ff   `.
         ret                     ; 2838 c9   I
