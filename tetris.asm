@@ -5629,22 +5629,22 @@ l279b:  ld      a,2fh           ; 279b 3e 2f   >/
 ;  HL = Start Addr
 ;  DE = End Addr
 ;  BC = Length of data
-l27a4:  ldi     a,(hl)          ; 27a4 2a   *
+MEM_MOVE:  ldi     a,(hl)          ; 27a4 2a   *
         ld      (de),a          ; 27a5 12   .
         inc     de              ; 27a6 13   .
         dec     bc              ; 27a7 0b   .
         ld      a,b             ; 27a8 78   x
         or      c               ; 27a9 b1   1
-        jr      nz,l27a4        ; 27aa 20 f8    x
+        jr      nz,MEM_MOVE        ; 27aa 20 f8    x
         ret                     ; 27ac c9   I
 
 l27ad:  call    l27c3           ; 27ad cd c3 27   MC'
         ld      bc,0a0h         ; 27b0 01 a0 00   . .
-        call    l27a4           ; 27b3 cd a4 27   M$'
+        call    MEM_MOVE           ; 27b3 cd a4 27   M$'
         ld      hl,l323f        ; 27b6 21 3f 32   !?2
         ld      de,8300h        ; 27b9 11 00 83   ...
         ld      bc,0d00h        ; 27bc 01 00 0d   ...
-        call    l27a4           ; 27bf cd a4 27   M$'
+        call    MEM_MOVE           ; 27bf cd a4 27   M$'
         ret                     ; 27c2 c9   I
 
 ; Copy characters with only two colors
@@ -5665,13 +5665,13 @@ l27cc:  ldi     a,(hl)          ; 27cc 2a   *
 ; Copy character set to character ram
 l27d7:  call    27c3h           ; 27d7 cd c3 27   MC'
         ld      bc,0da0h        ; 27da 01 a0 0d   . .
-        call    l27a4           ; 27dd cd a4 27   M$'
+        call    MEM_MOVE           ; 27dd cd a4 27   M$'
         ret                     ; 27e0 c9   I
 
 ; This instruction is not used.
         ld      bc,1000h        ; 27e1 01 00 10   ...
 l27e4:  ld      de,8000h        ; 27e4 11 00 80   ...
-        call    l27a4           ; 27e7 cd a4 27   M$'
+        call    MEM_MOVE           ; 27e7 cd a4 27   M$'
 l27ea:  ret                     ; 27ea c9   I
 
 ; Copy a screen from DE to screen ram
