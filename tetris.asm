@@ -493,7 +493,7 @@ l02f8:  ldh     a,(0e1h)        ; 02f8 f0 e1   pa
 
 ; Display credits screen
 l0369:  call    SHUTDOWN_LCD           ; 0369 cd 20 28   M (
-        call    l27d7           ; 036c cd d7 27   MW'
+        call    COPY_CHAR_SET           ; 036c cd d7 27   MW'
         ld      de,l4a07        ; 036f 11 07 4a   ..J
         call    l27eb           ; 0372 cd eb 27   Mk'
         call    l178a           ; 0375 cd 8a 17   M..
@@ -550,7 +550,7 @@ l03ae:  call    SHUTDOWN_LCD           ; 03ae cd 20 28   M (
         ldh     (0c7h),a        ; 03c0 e0 c7   `G
         call    l2293           ; 03c2 cd 93 22   M."
         call    l2651           ; 03c5 cd 51 26   MQ&
-        call    l27d7           ; 03c8 cd d7 27   MW'
+        call    COPY_CHAR_SET           ; 03c8 cd d7 27   MW'
         ld      hl,0c800h       ; 03cb 21 00 c8   !.H
 l03ce:  ld      a,2fh           ; 03ce 3e 2f   >/
         ldi     (hl),a          ; 03d0 22   "
@@ -5638,7 +5638,7 @@ MEM_MOVE:  ldi     a,(hl)          ; 27a4 2a   *
         jr      nz,MEM_MOVE        ; 27aa 20 f8    x
         ret                     ; 27ac c9   I
 
-l27ad:  call    l27c3           ; 27ad cd c3 27   MC'
+l27ad:  call    COPY_CHAR_2_COL           ; 27ad cd c3 27   MC'
         ld      bc,0a0h         ; 27b0 01 a0 00   . .
         call    MEM_MOVE           ; 27b3 cd a4 27   M$'
         ld      hl,l323f        ; 27b6 21 3f 32   !?2
@@ -5648,9 +5648,9 @@ l27ad:  call    l27c3           ; 27ad cd c3 27   MC'
         ret                     ; 27c2 c9   I
 
 ; Copy characters with only two colors
-l27c3:  ld      hl,l415f        ; 27c3 21 5f 41   !_A
+COPY_CHAR_2_COL:  ld      hl,(CHAR_SET)        ; 27c3 21 5f 41   !_A
         ld      bc,l0138        ; 27c6 01 38 01   .8.
-        ld      de,8000h        ; 27c9 11 00 80   ...
+        ld      de,(TILESET_1)        ; 27c9 11 00 80   ...
 l27cc:  ldi     a,(hl)          ; 27cc 2a   *
         ld      (de),a          ; 27cd 12   .
         inc     de              ; 27ce 13   .
@@ -5663,14 +5663,14 @@ l27cc:  ldi     a,(hl)          ; 27cc 2a   *
         ret                     ; 27d6 c9   I
 
 ; Copy character set to character ram
-l27d7:  call    27c3h           ; 27d7 cd c3 27   MC'
+COPY_CHAR_SET:  call    COPY_CHAR_2_COL           ; 27d7 cd c3 27   MC'
         ld      bc,0da0h        ; 27da 01 a0 0d   . .
         call    MEM_MOVE           ; 27dd cd a4 27   M$'
         ret                     ; 27e0 c9   I
 
 ; This instruction is not used.
         ld      bc,1000h        ; 27e1 01 00 10   ...
-l27e4:  ld      de,8000h        ; 27e4 11 00 80   ...
+l27e4:  ld      de,(TILESET_1)        ; 27e4 11 00 80   ...
         call    MEM_MOVE           ; 27e7 cd a4 27   M$'
 l27ea:  ret                     ; 27ea c9   I
 
@@ -6655,7 +6655,7 @@ l3ff7:  .db     2ah,7bh,2fh,2fh,2fh,2fh,2fh,2fh,2fh,2fh,2fh,2fh,7bh     ; 3ff7 2
         .db     2fh,2fh,2fh,3ch,2ah,7dh,2fh,2fh,2fh,2fh,2fh,2fh,2fh,2fh ; 4147 2f 2f 2f 3c 2a 7d 2f 2f 2f 2f 2f 2f 2f 2f   ///<*}////////
         .db     2fh,2fh,7dh,2bh,3dh,3eh,3eh,3eh,3eh,3fh ; 4155 2f 2f 7d 2b 3d 3e 3e 3e 3e 3f   //}+=>>>>?
 ; Character Set
-l415f:  .db     0,3ch,66h,66h,66h,66h,3ch,0,0,18h,38h,18h,18h,18h       ; 415f 00 3c 66 66 66 66 3c 00 00 18 38 18 18 18   .<ffff<...8...
+(CHAR_SET):  .db     0,3ch,66h,66h,66h,66h,3ch,0,0,18h,38h,18h,18h,18h       ; 415f 00 3c 66 66 66 66 3c 00 00 18 38 18 18 18   .<ffff<...8...
         .db     3ch,0,0,3ch,4eh,0eh,3ch,70h,7eh,0,0,7ch,0eh,3ch,0eh,0eh ; 416d 3c 00 00 3c 4e 0e 3c 70 7e 00 00 7c 0e 3c 0e 0e   <..<N.<p...|.<..
         .db     7ch,0,0,3ch,6ch,4ch,4eh,7eh,0ch,0,0,7ch,60h,7ch,0eh,4eh ; 417d 7c 00 00 3c 6c 4c 4e 7e 0c 00 00 7c 60 7c 0e 4e   |..<lLN....|`|.N
         .db     3ch,0,0,3ch,60h,7ch,66h,66h,3ch,0,0,7eh,6,0ch,18h,38h,38h       ; 418d 3c 00 00 3c 60 7c 66 66 3c 00 00 7e 06 0c 18 38 38   <..<`|ff<......88
