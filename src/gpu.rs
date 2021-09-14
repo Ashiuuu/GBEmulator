@@ -178,7 +178,7 @@ impl GPU {
             // drawing the sprite
             let shift = 0b10000000 >> pos_x_in_sprite;
             let raw_1 = (sprite[(pos_y_in_sprite * 2) as usize] & shift) >> (7 - pos_x_in_sprite);
-            let raw_2 = sprite[(pos_y_in_sprite * 2 + 1) as usize] & shift >> (7 - pos_x_in_sprite);
+            let raw_2 = (sprite[(pos_y_in_sprite * 2 + 1) as usize] & shift) >> (7 - pos_x_in_sprite);
             let shade = raw_1 + (raw_2 << 1);
 
             self.choose_color_from_palette(bus, canvas, shade);
