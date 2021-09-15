@@ -7,8 +7,6 @@ mod debugger;
 
 //use std::time::Duration;
 
-//use hex;
-
 use sdl2;
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
@@ -81,7 +79,6 @@ fn main() {
     let mut keys = Keys::new_keys();
 
     let mut debugger = debugger::Debugger::new_debugger();
-    debugger.start_paused();
     let debug = true;
 
     let sdl_context = sdl2::init().unwrap();
@@ -100,18 +97,17 @@ fn main() {
     canvas.set_scale(scale, scale).unwrap();
 
     'main_loop: loop {
+        for event in event_pump.poll_iter() {
+            match event {
+                Event::Quit { .. } => break 'main_loop,
+                Event::KeyDown { keycode: Some(Keycode::Escape), .. } => break 'main_loop,
+                Event::KeyDown { keycode: Some(Keycode::F1), .. } => debugger.set_paused(true),
+                _ => keys.update_keys(event),
+            };
+        }
         if debug == true {
             debugger.tick(&mut cpu, &mut bus, &mut gpu, &mut keys, &mut canvas);
-            //::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));
         } else {
-            for event in event_pump.poll_iter() {
-                match event {
-                    Event::Quit { .. } => break 'main_loop,
-                    Event::KeyDown { keycode: Some(Keycode::Escape), .. } => break 'main_loop,
-                    Event::KeyDown { keycode: Some(Keycode::Space), .. } => debugger.set_paused(true),
-                    _ => keys.update_keys(event),
-                };
-            }
             keys.update_register(&mut bus);
             gpu.tick(&mut bus, &mut canvas);
             cpu.tick(&mut bus);
