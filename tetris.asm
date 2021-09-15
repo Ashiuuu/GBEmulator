@@ -398,7 +398,7 @@ l029a:  ldi     a,(hl)          ; 029a 2a   *
         ldh     (6),a           ; 02c2 e0 06   `.
 
 ; Read buttons & return values
-l02c4:  call    READ_BUTTONS           ; 02c4 cd a6 29   M&)
+MAIN_LOOP:  call    READ_BUTTONS           ; 02c4 cd a6 29   M&)
         call    MAIN_SWITCH           ; 02c7 cd f8 02   Mx.
         call    l7ff0           ; 02ca cd f0 7f   Mp.
 ; If all arrow keys are down at the
@@ -431,7 +431,7 @@ l02ed:  ldh     a,(85h)         ; 02ed f0 85   p.
 
         xor     a               ; 02f2 af   /
         ldh     (85h),a         ; 02f3 e0 85   `.
-        jp      l02c4           ; 02f5 c3 c4 02   CD.
+        jp      MAIN_LOOP           ; 02f5 c3 c4 02   CD.
 
 MAIN_SWITCH:  ldh     a,(0e1h)        ; 02f8 f0 e1   pa
         rst     28h             ; 02fa ef   o
