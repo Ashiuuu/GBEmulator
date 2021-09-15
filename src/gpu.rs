@@ -6,6 +6,7 @@ pub struct GPU {
     clock_cycles: u16,
     current_line: u8,
     mode: u8,
+    stopped: bool,
 }
 
 impl GPU {
@@ -30,7 +31,7 @@ impl GPU {
     const VERTICAL_BLANCK_LINE_CLOCKS: u16 = 456; // single line of vlank ; 10 lines total
 
     pub fn new_gpu(x_s: u32, y_s: u32) -> GPU {
-        GPU {x_size: x_s, y_size: y_s, clock_cycles: 0, current_line: 0, mode: 2}
+        GPU {x_size: x_s, y_size: y_s, clock_cycles: 0, current_line: 0, mode: 2, stopped: false,}
     }
 
     pub fn get_y_coord(&self) -> u8 {
@@ -41,13 +42,16 @@ impl GPU {
         let control_reg = bus.fetch_byte(GPU::CONTROL_REGISTER);
         let display_enable = control_reg & 0b10000000;
         if display_enable == 0 {
-            canvas.set_draw_color(sdl2::pixels::Color::WHITE);
-            canvas.clear();
-            canvas.present();
+            if self.stopped == false {
+                canvas.set_draw_color(sdl2::pixels::Color::WHITE);
+                canvas.clear();
+                canvas.present();
 
-            self.current_line = 0;
-            self.clock_cycles = 0;
-            self.mode = 0;
+                self.current_line = 0;
+                self.clock_cycles = 0;
+                self.mode = 0;
+                self.stopped = true;
+            } 
             return;
         }
 
