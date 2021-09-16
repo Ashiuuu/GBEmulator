@@ -9,15 +9,32 @@ use std::env;
 use std::io::stdout;
 use std::io::Write;
 
+enum CommandType {
+    Breakpoint,
+    Continue,
+    Step,
+    Dump,
+    ValueBp,
+    Print,
+    Help,
+    Invalid,
+}
+
+impl PartialEq for CommandType {
+    fn eq(&self, other: &Self) -> bool {
+        std::mem::discriminant(self) == std::mem::discriminant(other)
+    }
+}
+
 pub struct Command {
-    name: String,
+    name: CommandType,
     args: Vec<String>,
 }
 
 impl Command {
-    pub fn new_command(n: String) -> Command {
+    pub fn new_command() -> Command {
         let mut ret = Command {
-            name: n,
+            name: CommandType::Invalid,
             args: vec!["".to_string()],
         };
         ret.args.pop();
@@ -29,8 +46,8 @@ pub struct Debugger {
     breakpoints: Vec<u16>,
     value_bp_de: Vec<u16>,
     paused: bool,
-    view_tileset: bool,
     stepping: bool,
+    nb_ticks: u32,
 }
 
 impl Debugger {
@@ -39,19 +56,12 @@ impl Debugger {
             breakpoints: vec![0],
             value_bp_de: vec![0],
             paused: false,
-            view_tileset: false,
             stepping: false,
+            nb_ticks: 0,
         };
         ret.value_bp_de.pop();
         ret.breakpoints.pop();
         ret
-    }
-
-    pub fn start_paused(&mut self) {
-        self.paused = true;
-    }
-    pub fn viewing_tileset(&self) -> bool {
-        self.view_tileset
     }
 
     fn add_breakpoint(&mut self, bp: u16) -> i16 {
@@ -93,7 +103,6 @@ impl Debugger {
         println!("v: add value based breakpoint of a register");
         println!("c: continue running");
         println!("d: dump memory");
-        println!("t: switch display to tileset");
         println!("s: perform one program step");
     }
 
@@ -144,7 +153,7 @@ impl Debugger {
     }
 
     fn exec_command(&mut self, command: &Command, bus: &bus::Bus, cpu: &cpu::CPU) {
-        if command.name == "breakpoint" {
+        if command.name == CommandType::Breakpoint {
             let sub_co = &command.args[0];
             if sub_co == "rem" {
                 let address = Debugger::string_to_decimal(&command.args[1]);
@@ -176,29 +185,23 @@ impl Debugger {
             } else {
                 println!("Invalid breakpoint command : {}", command.args[0]);
             }
-        } else if command.name == "continue" {
+        } else if command.name == CommandType::Continue {
             self.paused = false;
             self.stepping = false;
-        } else if command.name == "help" {
+        } else if command.name == CommandType::Help {
             Debugger::print_help();
-        } else if command.name == "tileset" {
-            if self.viewing_tileset() == true {
-                self.view_tileset = false;
-            } else {
-                self.view_tileset = true;
-            }
-        } else if command.name == "dump" {
+        } else if command.name == CommandType::Dump {
             let start = Debugger::string_to_decimal(&command.args[0]) as u32;
             let length = Debugger::string_to_decimal(&command.args[1]) as u32;
             print!("{:#04x}[0..{}]: ", start, length);
             Debugger::dump_memory(bus, start, length);
-        } else if command.name == "value_bp" {
+        } else if command.name == CommandType::ValueBp {
             let reg = &command.args[0];
             let value = Debugger::string_to_decimal(&command.args[1]);
             if reg == "de" {
                 self.value_bp_de.push(value);
             }
-        } else if command.name == "print" {
+        } else if command.name == CommandType::Print {
             let op = bus.fetch_byte(cpu.pc);
             let current_instruction = match op {
                 0xCB => &instructions2::Instruction::SECOND_SET[op as usize],
@@ -206,7 +209,7 @@ impl Debugger {
             };
             println!("{:#x} : {}", op, current_instruction.disassembly);
             Debugger::dump_registers(cpu, bus);
-        } else if command.name == "step" {
+        } else if command.name == CommandType::Step {
             if self.stepping == false {
                 println!("Entering step mode");
             }
@@ -216,23 +219,22 @@ impl Debugger {
 
     fn parse_command(&mut self, command: String) -> Command {
         let tokens: Vec<&str> = command.split(' ').collect();
-        let mut ret = Command::new_command("placeholder".to_string());
+        let mut ret = Command::new_command();
 
         for i in 1..tokens.len() {
             ret.args.push(tokens[i].to_string());
         }
 
         ret.name = match tokens[0] {
-            "b" => "breakpoint",
-            "c" => "continue",
-            "h" => "help",
-            "t" => "tileset",
-            "d" => "dump",
-            "v" => "value_bp",
-            "p" => "print",
-            "s" => "step",
-            _ => { println!("Invalid command : {}", tokens[0]); "INVALID" },
-        }.to_string();
+            "b" => CommandType::Breakpoint,
+            "c" => CommandType::Continue,
+            "h" => CommandType::Help,
+            "d" => CommandType::Dump,
+            "v" => CommandType::ValueBp,
+            "p" => CommandType::Print,
+            "s" => CommandType::Step,
+            _ => { println!("Invalid command : {}", tokens[0]); CommandType::Invalid },
+        };
 
         return ret;
     }
@@ -246,11 +248,7 @@ impl Debugger {
         canvas: &mut sdl2::render::Canvas<sdl2::video::Window>,
     ) {
         keys.update_register(bus);
-        if self.viewing_tileset() == true {
-            gpu::GPU::dump_tileset(&bus, canvas);
-        } else {
-            gpu.tick(bus, canvas);
-        }
+        gpu.tick(bus, canvas);
         cpu.tick(bus);
     }
 
@@ -266,11 +264,12 @@ impl Debugger {
             // check breakpoints and stuff
             if self.is_a_breakpoint(cpu.pc) {
                 self.paused = true;
-                println!("Breakpoint {} reached !", cpu.pc);
+                println!("Breakpoint {:#04x} reached !", cpu.pc);
             } else if self.is_a_de_val_bp(cpu.de.get_combined()) {
                 self.paused = true;
-                println!("Value breakpoint {} reached !", cpu.de.get_combined());
+                println!("Value breakpoint {:#04x} reached !", cpu.de.get_combined());
             }
+            self.nb_ticks += 1;
             self.tick_devices(cpu, bus, gpu, keys, canvas);
         } else {
             if cpu.get_clock_cycles() == 0 {
@@ -286,11 +285,11 @@ impl Debugger {
                     command.pop(); // remove carriage return on windows
                 }
                 let com = self.parse_command(command);
-                if com.name != "INVALID" {
+                if com.name != CommandType::Invalid {
                     self.exec_command(&com, bus, cpu);
                 }
 
-                if self.stepping == true && com.name == "step" {
+                if self.stepping == true && com.name == CommandType::Step {
                     self.tick_devices(cpu, bus, gpu, keys, canvas);
                 }
             } else {
