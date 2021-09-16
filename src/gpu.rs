@@ -13,7 +13,8 @@ impl GPU {
     const MAX_LINE: u8 = 143; // 144 lines in total
     const LINE_VBLANK_END: u8 = 153;
 
-    const VRAM_TILE_DATA_BEGIN: u16 = 0x8000;
+    const TILESET_1: u16 = 0x8000;
+    const TILESET_2: u16 = 0x9000; // from -127 to 128, 0x9000 is pattern 0 but tileset starts at 0x8800
     const BG_MAP_1: u16 = 0x9800;
     const BG_MAP_2: u16 = 0x9C00;
     const BG_PALETTE: u16 = 0xFF47;
@@ -117,35 +118,6 @@ impl GPU {
         bus.set_byte(GPU::STATUS_REGISTER, self.mode);
     }
 
-    pub fn dump_tileset(bus: &bus::Bus, canvas: &mut sdl2::render::Canvas<sdl2::video::Window>) {
-        for line in 0..19 {
-
-            // printing one line of sprite data
-            for sprite in 0..20 { // 20 sprites per line
-                let raw_sprite: Vec<u8> = (0..16).map(|i| bus.fetch_byte((line * 20 + sprite) * 16 + GPU::VRAM_TILE_DATA_BEGIN + i)).collect();
-                for pair in (0..16).step_by(2) { // each sprite is 2 byte long
-                    for j in 0..8 { // each bit in a byte is a pixel
-                        let shift = 0b10000000 >> j; // scanning from left to right
-                        let raw_1: u8 = (raw_sprite[pair] & shift) >> (7 - j);
-                        let raw_2: u8 = (raw_sprite[pair + 1] & shift) >> (7 - j);
-                        let shade: u8 = raw_1 + (raw_2 << 1);
-                        match shade {
-                            3 => canvas.set_draw_color(sdl2::pixels::Color::BLACK),
-                            2 => canvas.set_draw_color(sdl2::pixels::Color::from((96, 96, 96))),
-                            1 => canvas.set_draw_color(sdl2::pixels::Color::from((192, 192, 192))),
-                            _ => canvas.set_draw_color(sdl2::pixels::Color::WHITE),
-                        };
-                        if shade != 0 {
-                            let pos_x: i32 = (sprite * 8 + j) as i32;
-                            let pos_y: i32 = (line * 8 + ((pair as u16) / 2)) as i32;
-                            canvas.draw_point(sdl2::rect::Point::new(pos_x, pos_y)).unwrap();
-                        }
-                    }
-                }
-            }
-        }
-    }
-
     fn choose_color_from_palette(&self, bus: &bus::Bus, canvas: &mut sdl2::render::Canvas<sdl2::video::Window>, color_nb: u8) {
         let palette = bus.fetch_byte(GPU::BG_PALETTE);
         let shade = match color_nb {
@@ -166,6 +138,7 @@ impl GPU {
     }
 
     fn render_background_line(&self, bus: &bus::Bus, canvas: &mut sdl2::render::Canvas<sdl2::video::Window>) {
+        let tileset = bus.fetch_byte(GPU::CONTROL_REGISTER) & 0b10000;
         let scroll_x = bus.fetch_byte(GPU::SCROLL_X);
         let scroll_y = bus.fetch_byte(GPU::SCROLL_Y);
 
@@ -175,7 +148,12 @@ impl GPU {
         for i in 0..self.x_size {
             let nb_sprite = sprites[(((i as u8) + scroll_x) / 8) as usize];
             let address_offset = 16 * (nb_sprite as u16);
-            let sprite: Vec<u8> = (0..16).map(|k| bus.fetch_byte(GPU::VRAM_TILE_DATA_BEGIN + address_offset + k)).collect();
+            let relative_address_offset = 16 * (nb_sprite as i16);
+            let sprite:Vec<u8> = if tileset == 0 {
+                (0..16).map(|k| bus.fetch_byte(((GPU::TILESET_2 as i16) + relative_address_offset + k) as u16)).collect()
+            } else {
+                (0..16).map(|k| bus.fetch_byte(GPU::TILESET_1 + address_offset + k)).collect()
+            };
             let pos_x_in_sprite = ((i as u8) + scroll_x) % 8;
             let pos_y_in_sprite = self.current_line.wrapping_add(scroll_y) % 8;
 
