@@ -59,10 +59,11 @@ impl Keys {
 
     pub fn update_register(&self, bus: &mut bus::Bus) {
         let row = (bus.fetch_byte(0xFF00) & 0b110000) >> 4;
-        if row & 1 == 0 {
-            bus.set_byte(0xFF00, self.row_1 & 0xF);
+        if row & 1 == 0 { // 4 upper bits are set to 1 to keep from reading more values
+            bus.set_byte(0xFF00, (self.row_1 & 0xF) | 0b11110000); // update register with direction keys values
         } else if row & 0b10 == 0 {
-            bus.set_byte(0xFF00, self.row_2 & 0xF);
+            bus.set_byte(0xFF00, (self.row_2 & 0xF) | 0b11110000);
+            //bus.set_byte(0xFF00, self.row_2 & 0xF); // update register with start / select / a / b key values
         }
     }
 }
@@ -79,6 +80,7 @@ fn main() {
     let mut keys = Keys::new_keys();
 
     let mut debugger = debugger::Debugger::new_debugger();
+    //debugger.set_paused(true);
     let debug = true;
 
     let sdl_context = sdl2::init().unwrap();

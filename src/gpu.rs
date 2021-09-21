@@ -17,6 +17,7 @@ impl GPU {
     const TILESET_2: u16 = 0x9000; // from -127 to 128, 0x9000 is pattern 0 but tileset starts at 0x8800
     const BG_MAP_1: u16 = 0x9800;
     const BG_MAP_2: u16 = 0x9C00;
+    const OAM: u16 = 0xFE00;
     const BG_PALETTE: u16 = 0xFF47;
     const CONTROL_REGISTER: u16 = 0xFF40;
     const STATUS_REGISTER: u16 = 0xFF41;
@@ -33,10 +34,6 @@ impl GPU {
 
     pub fn new_gpu(x_s: u32, y_s: u32) -> GPU {
         GPU {x_size: x_s, y_size: y_s, clock_cycles: 0, current_line: 0, mode: 2, stopped: false,}
-    }
-
-    pub fn get_y_coord(&self) -> u8 {
-        self.current_line
     }
 
     pub fn tick(&mut self, bus: &mut bus::Bus, canvas: &mut sdl2::render::Canvas<sdl2::video::Window>) {
@@ -132,7 +129,7 @@ impl GPU {
             3 => canvas.set_draw_color(sdl2::pixels::Color::BLACK),
             2 => canvas.set_draw_color(sdl2::pixels::Color::from((96, 96, 96))),
             1 => canvas.set_draw_color(sdl2::pixels::Color::from((192, 192, 192))),
-            0 => canvas.set_draw_color(sdl2::pixels::Color::WHITE),
+            0 => canvas.set_draw_color(sdl2::pixels::Color::from((255, 255, 255, 0))),
             _ => panic!("Shade {} not valid!", shade),
         };
     }
@@ -168,11 +165,68 @@ impl GPU {
         }
     }
 
+    fn check_8x8_sprite_rendering(&self, x: i32, y: i32) -> bool {
+        ((self.current_line as u16 as i32) >= y && (self.current_line as u16 as i32) <= y + 8)
+        && (x > 0 && x < 168)
+    }
+
+    fn render_sprite_line(&self, bus: &bus::Bus, canvas: &mut sdl2::render::Canvas<sdl2::video::Window>) {
+        let sprite_size = GPU::CONTROL_REGISTER & 0b100;
+        for i in 0..=40 {
+            let base_address = GPU::OAM + i * 4;
+            let y_pos = (bus.fetch_byte(base_address) as u16 as i32) - 16;
+            let x_pos = (bus.fetch_byte(base_address + 1) as u16 as i32) - 8;
+            let tile_nb = bus.fetch_byte(base_address + 2);
+            let flags = bus.fetch_byte(base_address + 3);
+
+            if sprite_size == 0 { // 8x8 sprites
+                if self.check_8x8_sprite_rendering(x_pos, y_pos) == false {
+                    continue; // do not render sprite
+                }
+            } else { // 8x16 sprites
+                // TODO
+                panic!("8x16 sprites unimplemented yet");
+            }
+            // sprite is valid to render
+            let mut sprite: Vec<u8> = (0..16).map(|k| bus.fetch_byte(GPU::TILESET_1 + 16 * (tile_nb as u16) + k)).collect();
+            if flags & 0b1000000 == 1 { // Y flip
+                sprite.reverse();
+            }
+            // get Y line to render
+            println!("curr = {} | y_pose = {}", self.current_line, y_pos);
+            let row_index = ((self.current_line as u16 as i32) - y_pos) as usize;
+            let row_1 = sprite[2 * row_index];
+            let row_2 = sprite[2 * row_index + 1];
+
+            let x_flip = flags & 0b100000;
+
+            for i in 0..8 {
+                if x_flip == 1 {
+                    let shade_1 = (row_1 & (0b10000000 >> (7 - i))) >> (i);
+                    let shade_2 = (row_2 & (0b10000000 >> (7 - i))) >> (i);
+                    let shade = shade_1 + (shade_2 << 1);
+                    self.choose_color_from_palette(bus, canvas, shade);
+                    canvas.draw_point(sdl2::rect::Point::new(x_pos + i, self.current_line as i32)).unwrap();
+                } else {
+                    let shade_1 = (row_1 & (0b10000000 >> i)) >> (7 - i);
+                    let shade_2 = (row_2 & (0b10000000 >> i)) >> (7 - i);
+                    let shade = shade_1 + (shade_2 << 1);
+                    self.choose_color_from_palette(bus, canvas, shade);
+                    canvas.draw_point(sdl2::rect::Point::new(x_pos + i, self.current_line as i32)).unwrap();
+                }
+            }
+        }
+    }
+
     fn write_scanline(&self, bus: &bus::Bus, canvas: &mut sdl2::render::Canvas<sdl2::video::Window>) {
         let control_reg = bus.fetch_byte(GPU::CONTROL_REGISTER);
         let bg_display_flag = control_reg & 1;
+        let sprite_display_flag = control_reg & 0b10;
         if bg_display_flag != 0 {
             self.render_background_line(bus, canvas);
+        }
+        if sprite_display_flag != 0 {
+            self.render_sprite_line(bus, canvas);
         }
     }
 
