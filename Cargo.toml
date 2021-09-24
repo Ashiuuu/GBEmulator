@@ -1,5 +1,5 @@
 [package]
-name = "gb_emulator"
+name = "GBEmulator"
 version = "0.1.0"
 authors = ["Ashiu <clement.milisavljevic@epita.fr>"]
 edition = "2018"
