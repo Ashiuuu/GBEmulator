@@ -271,19 +271,72 @@ impl Debugger {
         cpu.tick(bus);
     }
 
-    pub fn tick(
+    fn handle_command(&mut self, bus: &bus::Bus, cpu: &cpu::CPU) -> CommandType {
+        print!("> ");
+        stdout().flush().unwrap();
+        let mut command = String::new();
+        ::std::io::stdin()
+            .read_line(&mut command)
+            .expect("Unable to read from stind from debugger tick function");
+        command.pop(); // remove newline character
+        if env::consts::OS == "windows" {
+            command.pop(); // remove carriage return on windows
+        }
+
+        let com = self.parse_command(command);
+        if com.name != CommandType::Invalid {
+            self.exec_command(&com, bus, cpu);
+        }
+
+        com.name
+    }
+
+    pub fn tick(&mut self, cpu: &mut cpu::CPU, bus: &mut bus::Bus, gpu: &mut gpu::GPU, keys: &mut crate::Keys, canvas: &mut sdl2::render::Canvas<sdl2::video::Window>) {
+        //check for breakpoints
+        if self.is_a_breakpoint(cpu.pc) {
+            if self.paused == false {
+                println!("Breakpoint at address {:#04x} reached !", cpu.pc);
+            }
+            self.paused = true;
+        } else if self.is_a_de_val_bp(cpu.de.get_combined()) {
+            if self.paused == false {
+                println!("Value breakpoint {:#04x} reached !", cpu.de.get_combined());
+            }
+            self.paused = true;
+        }
+        //if stopped
+        if self.paused == false && self.stepping == false {
+            self.tick_devices(cpu, bus, gpu, keys, canvas);
+        }
+        //else
+        else {
+            if cpu.get_clock_cycles() == 0 {
+                let com = self.handle_command(bus, cpu);
+
+                if com == CommandType::Step || com == CommandType::Continue {
+                    self.tick_devices(cpu, bus, gpu, keys, canvas);
+                }
+            } else {
+                self.tick_devices(cpu, bus, gpu, keys, canvas);
+            }
+        }
+    }
+
+
+
+    pub fn tick_old(
         &mut self,
         cpu: &mut cpu::CPU,
         bus: &mut bus::Bus,
         gpu: &mut gpu::GPU,
         keys: &mut crate::Keys,
-        canvas: &mut sdl2::render::Canvas<sdl2::video::Window>,
+        canvas: &mut sdl2::render::Canvas<sdl2::video::Window>
     ) {
         if self.paused == false && self.stepping == false {
             // check breakpoints and stuff
             if self.is_a_breakpoint(cpu.pc) {
                 self.paused = true;
-                println!("Breakpoint {:#04x} reached !", cpu.pc);
+                println!("Breakpoint at address {:#04x} reached !", cpu.pc);
             } else if self.is_a_de_val_bp(cpu.de.get_combined()) {
                 self.paused = true;
                 println!("Value breakpoint {:#04x} reached !", cpu.de.get_combined());
@@ -292,7 +345,7 @@ impl Debugger {
         } else {
             if cpu.get_clock_cycles() == 0 {
                 // command handling
-                print!("> ");
+                /*print!("> ");
                 stdout().flush().unwrap();
                 let mut command = String::new();
                 ::std::io::stdin()
@@ -305,9 +358,10 @@ impl Debugger {
                 let com = self.parse_command(command);
                 if com.name != CommandType::Invalid {
                     self.exec_command(&com, bus, cpu);
-                }
+                }*/
+                let com = self.handle_command(bus, cpu);
 
-                if self.stepping == true && com.name == CommandType::Step {
+                if self.stepping == true && com == CommandType::Step {
                     self.tick_devices(cpu, bus, gpu, keys, canvas);
                 }
             } else {
