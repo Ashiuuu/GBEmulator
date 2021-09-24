@@ -73,14 +73,14 @@ fn main() {
     let scale: f32 = 2.0;
 
     let mut bus: bus::Bus = bus::Bus::new_bus(&String::from("roms/Tetris.GB"));
-    //let mut bus: bus::Bus = bus::Bus::new_bus(&String::from("roms/cpu_instrs.gb"));
+    //let mut bus: bus::Bus = bus::Bus::new_bus(&String::from("roms/11-op a,(hl).gb"));
     let mut cpu = cpu::CPU::new_cpu();
     let mut gpu = gpu::GPU::new_gpu();
     let mut keys = Keys::new_keys();
 
     let mut debugger = debugger::Debugger::new_debugger();
-    debugger.set_paused(true);
-    let debug = true;
+    //debugger.set_paused(true);
+    let debug = false;
 
     let sdl_context = sdl2::init().unwrap();
     let video_subsystem = sdl_context.video().unwrap();
