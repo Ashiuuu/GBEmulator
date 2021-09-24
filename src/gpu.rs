@@ -139,25 +139,30 @@ impl GPU {
         let scroll_y = bus.fetch_byte(GPU::SCROLL_Y);
 
         let nb_line = (self.current_line.wrapping_add(scroll_y) / 8) % 32; // ith line of sprites
-        let sprites: Vec<u8> = (0..32).map(|i| bus.fetch_byte(GPU::BG_MAP_1 + ((nb_line as u16) * 32) + i)).collect(); // sprite line
 
         for i in 0..GPU::SCREEN_WIDTH {
-            let nb_sprite = sprites[(((i as u8) + scroll_x) / 8) as usize];
-            let address_offset = 16 * (nb_sprite as u16);
-            let relative_address_offset = 16 * (nb_sprite as i16);
-            let sprite:Vec<u8> = if tileset == 0 {
-                (0..16).map(|k| bus.fetch_byte(((GPU::TILESET_2 as i16) + relative_address_offset + k) as u16)).collect()
-            } else {
-                (0..16).map(|k| bus.fetch_byte(GPU::TILESET_1 + address_offset + k)).collect()
-            };
+            let index = (((i as u8) + scroll_x) / 8) as u16;
+            let nb_sprite = bus.fetch_byte(GPU::BG_MAP_1 + ((nb_line as u16) * 32) + index);
             let pos_x_in_sprite = ((i as u8) + scroll_x) % 8;
             let pos_y_in_sprite = self.current_line.wrapping_add(scroll_y) % 8;
-
+            
             // drawing the sprite
             let shift = 0b10000000 >> pos_x_in_sprite;
-            let raw_1 = (sprite[(pos_y_in_sprite * 2) as usize] & shift) >> (7 - pos_x_in_sprite);
-            let raw_2 = (sprite[(pos_y_in_sprite * 2 + 1) as usize] & shift) >> (7 - pos_x_in_sprite);
-            let shade = raw_1 + (raw_2 << 1);
+            let shade: u8 = if tileset == 0 {
+                let relative_address_offset = 16 * (nb_sprite as i16);
+                let raw_1 = bus.fetch_byte(((GPU::TILESET_2 as i16) + relative_address_offset + ((pos_y_in_sprite as i16) * 2)) as u16);
+                let raw_1 = (raw_1 & shift) >> (7 - pos_x_in_sprite);
+                let raw_2 = bus.fetch_byte(((GPU::TILESET_2 as i16) + relative_address_offset + ((pos_y_in_sprite as i16) * 2 + 1)) as u16);
+                let raw_2 = (raw_2 & shift) >> (7 - pos_x_in_sprite);
+                raw_1 + (raw_2 << 1)
+            } else {
+                let address_offset = 16 * (nb_sprite as u16);
+                let raw_1 = bus.fetch_byte(GPU::TILESET_1 + address_offset + ((pos_y_in_sprite as u16) * 2));
+                let raw_1 = (raw_1 & shift) >> (7 - pos_x_in_sprite);
+                let raw_2 = bus.fetch_byte(GPU::TILESET_1 + address_offset + ((pos_y_in_sprite as u16) * 2 + 1));
+                let raw_2 = (raw_2 & shift) >> (7 - pos_x_in_sprite);
+                raw_1 + (raw_2 << 1)
+            };
 
             self.choose_color_from_palette(bus, canvas, shade);
             canvas.draw_point(sdl2::rect::Point::new(i as i32, self.current_line as i32)).unwrap();
