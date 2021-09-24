@@ -47,7 +47,6 @@ pub struct Debugger {
     value_bp_de: Vec<u16>,
     paused: bool,
     stepping: bool,
-    nb_ticks: u32,
 }
 
 impl Debugger {
@@ -57,7 +56,6 @@ impl Debugger {
             value_bp_de: vec![0],
             paused: false,
             stepping: false,
-            nb_ticks: 0,
         };
         ret.value_bp_de.pop();
         ret.breakpoints.pop();
@@ -96,14 +94,22 @@ impl Debugger {
     fn print_help() {
         println!("Commands :");
         println!("b: breakpoint manipulation");
-        println!("   - add XX : add breakpoint at address XX");
-        println!("   - rem XX : remove breakpoint at address XX ; does nothing if breakpoint does not exist");
-        println!("   - list : list all breakpoints");
         println!("p: print cpu state");
         println!("v: add value based breakpoint of a register");
         println!("c: continue running");
         println!("d: dump memory");
         println!("s: perform one program step");
+    }
+
+    fn print_b_help() {
+        println!("b - Breakpoint manipulation commands");
+        println!("Subcommand list :");
+        println!("add n : add breakpoint at address n");
+        println!("         n can be in decimal (n) format or hexadecinal (0xn) format");
+        println!("rem n : remove breakpoint at address n");
+        println!("list : list all set breakpoints");
+        println!("clear : remove all breakpoints");
+        println!("Addresses can be written in either decimal or hexadecimal format with a 0x prefix");
     }
 
     fn string_to_decimal(number: &String) -> u16 {
@@ -182,6 +188,8 @@ impl Debugger {
                         i += 1;
                     }
                 }
+            } else if sub_co == "clear" {
+                self.breakpoints.clear();
             } else {
                 println!("Invalid breakpoint command : {}", command.args[0]);
             }
@@ -189,7 +197,18 @@ impl Debugger {
             self.paused = false;
             self.stepping = false;
         } else if command.name == CommandType::Help {
-            Debugger::print_help();
+            if command.args.len() == 0 {
+                Debugger::print_help();
+            } else if command.args.len() != 1 {
+                println!("Too many arguments. Usage : help [command]");
+            } {
+                let sub_co = &command.args[0];
+                if sub_co == "b" {
+                    Debugger::print_b_help();
+                } else {
+                    println!("No available help for command {}", sub_co);
+                }
+            }
         } else if command.name == CommandType::Dump {
             let start = Debugger::string_to_decimal(&command.args[0]) as u32;
             let length = Debugger::string_to_decimal(&command.args[1]) as u32;
@@ -204,7 +223,7 @@ impl Debugger {
         } else if command.name == CommandType::Print {
             let op = bus.fetch_byte(cpu.pc);
             let current_instruction = match op {
-                0xCB => &instructions2::Instruction::SECOND_SET[op as usize],
+                0xCB => &instructions2::Instruction::SECOND_SET[bus.fetch_byte(cpu.pc + 1) as usize],
                 _ => &instructions::Instruction::SET[op as usize],
             };
             println!("{:#x} : {}", op, current_instruction.disassembly);
@@ -269,7 +288,6 @@ impl Debugger {
                 self.paused = true;
                 println!("Value breakpoint {:#04x} reached !", cpu.de.get_combined());
             }
-            self.nb_ticks += 1;
             self.tick_devices(cpu, bus, gpu, keys, canvas);
         } else {
             if cpu.get_clock_cycles() == 0 {
