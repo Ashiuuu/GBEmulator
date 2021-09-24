@@ -124,7 +124,7 @@ impl CPU {
         // fetch instruction byte on bus based on pc register
         let op = bus.fetch_byte(self.pc);
         let current_instruction = match op {
-            0xCB => &instructions2::Instruction::SECOND_SET[op as usize],
+            0xCB => &instructions2::Instruction::SECOND_SET[bus.fetch_byte(self.pc + 1) as usize],
             _ => &instructions::Instruction::SET[op as usize],
         };
 
