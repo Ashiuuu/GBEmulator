@@ -1,8 +1,6 @@
 use crate::bus;
 
 pub struct GPU {
-    x_size: u32,
-    y_size: u32,
     clock_cycles: u16,
     current_line: u8,
     mode: u8,
@@ -10,13 +8,14 @@ pub struct GPU {
 }
 
 impl GPU {
+    const SCREEN_WIDTH: u8 = 160;
     const MAX_LINE: u8 = 143; // 144 lines in total
     const LINE_VBLANK_END: u8 = 153;
 
     const TILESET_1: u16 = 0x8000;
     const TILESET_2: u16 = 0x9000; // from -127 to 128, 0x9000 is pattern 0 but tileset starts at 0x8800
     const BG_MAP_1: u16 = 0x9800;
-    const BG_MAP_2: u16 = 0x9C00;
+    //const BG_MAP_2: u16 = 0x9C00;
     const OAM: u16 = 0xFE00;
     const BG_PALETTE: u16 = 0xFF47;
     const CONTROL_REGISTER: u16 = 0xFF40;
@@ -24,7 +23,7 @@ impl GPU {
     const SCROLL_Y: u16 = 0xFF42;
     const SCROLL_X: u16 = 0xFF43;
     const Y_COORDINATE: u16 = 0xFF44;
-    const Y_COMPARE: u16 = 0xFF45;
+    //const Y_COMPARE: u16 = 0xFF45;
     const DMA_TRANSFER_REGISTER: u16 = 0xFF46;
 
     const OAM_ACCESS_SCANLINE_CLOCKS: u16 = 80;
@@ -32,8 +31,8 @@ impl GPU {
     const HORIZONTAL_BLANK_CLOCKS: u16 = 204;
     const VERTICAL_BLANCK_LINE_CLOCKS: u16 = 456; // single line of vlank ; 10 lines total
 
-    pub fn new_gpu(x_s: u32, y_s: u32) -> GPU {
-        GPU {x_size: x_s, y_size: y_s, clock_cycles: 0, current_line: 0, mode: 2, stopped: false,}
+    pub fn new_gpu() -> GPU {
+        GPU {clock_cycles: 0, current_line: 0, mode: 2, stopped: false,}
     }
 
     pub fn tick(&mut self, bus: &mut bus::Bus, canvas: &mut sdl2::render::Canvas<sdl2::video::Window>) {
@@ -142,7 +141,7 @@ impl GPU {
         let nb_line = (self.current_line.wrapping_add(scroll_y) / 8) % 32; // ith line of sprites
         let sprites: Vec<u8> = (0..32).map(|i| bus.fetch_byte(GPU::BG_MAP_1 + ((nb_line as u16) * 32) + i)).collect(); // sprite line
 
-        for i in 0..self.x_size {
+        for i in 0..GPU::SCREEN_WIDTH {
             let nb_sprite = sprites[(((i as u8) + scroll_x) / 8) as usize];
             let address_offset = 16 * (nb_sprite as u16);
             let relative_address_offset = 16 * (nb_sprite as i16);
@@ -166,7 +165,7 @@ impl GPU {
     }
 
     fn check_8x8_sprite_rendering(&self, x: i32, y: i32) -> bool {
-        ((self.current_line as u16 as i32) >= y && (self.current_line as u16 as i32) <= y + 8)
+        ((self.current_line as u16 as i32) >= y && (self.current_line as u16 as i32) <= y + 7)
         && (x > 0 && x < 168)
     }
 
@@ -193,7 +192,6 @@ impl GPU {
                 sprite.reverse();
             }
             // get Y line to render
-            println!("curr = {} | y_pose = {}", self.current_line, y_pos);
             let row_index = ((self.current_line as u16 as i32) - y_pos) as usize;
             let row_1 = sprite[2 * row_index];
             let row_2 = sprite[2 * row_index + 1];
