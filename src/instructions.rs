@@ -2213,7 +2213,7 @@ fn jr_z_s8(cpu: &mut cpu::CPU, bus: &mut bus::Bus) {
 fn add_hl_to_hl(cpu: &mut cpu::CPU, _: &mut bus::Bus) {
     // add HL to HL and store into HL
     let hl = cpu.hl.get_combined();
-    let result = hl + hl;
+    let result = hl.wrapping_add(hl);
     if result == 0 {
         cpu.set_flag('c');
     }
