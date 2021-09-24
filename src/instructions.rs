@@ -2037,14 +2037,9 @@ fn add_de_to_hl(cpu: &mut cpu::CPU, _: &mut bus::Bus) {
     // add DE to HL and store into HL
     let de = cpu.de.get_combined();
     let hl = cpu.hl.get_combined();
-    let result = de + hl;
-    if result == 0 {
-        cpu.set_flag('c');
-    }
-    if de & 0xFF + hl & 0xFF > 255 {
-        // checking half carry
-        cpu.set_flag('h');
-    }
+    let result = de.wrapping_add(hl);
+    cpu.update_flag('c', result == 0);
+    cpu.update_flag('h', (de & 0xFF) + (hl & 0xFF) > 255);
     cpu.hl.set_word(result);
     cpu.set_flag('n');
 }
@@ -3191,7 +3186,7 @@ fn cp_l(cpu: &mut cpu::CPU, _: &mut bus::Bus) {
 fn cp_hl_ptr(cpu: &mut cpu::CPU, bus: &mut bus::Bus) {
     cpu.set_flag('n');
     let op = bus.fetch_byte(cpu.hl.get_combined());
-    let diff = cpu.af.high - op;
+    let diff = cpu.af.high.wrapping_sub(op);
     cpu.update_flag('z', diff == 0);
     cpu.update_flag('h', diff & 0b1111 == 0);
     cpu.update_flag('c', op > cpu.af.high);
@@ -3383,7 +3378,7 @@ fn ret_c(cpu: &mut cpu::CPU, bus: &mut bus::Bus) {
 
 fn ret_i(cpu: &mut cpu::CPU, bus: &mut bus::Bus) {
     cpu.ime = true;
-    ret(cpu, bus);
+    cpu.pc = cpu.pop_stack_d16(bus);
 }
 
 fn jp_c_a16(cpu: &mut cpu::CPU, bus: &mut bus::Bus) {
