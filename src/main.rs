@@ -1,117 +1,90 @@
 mod bus;
+mod canvas;
+mod color;
 mod cpu;
-mod instructions;
-mod instructions2;
+// mod debugger;
+mod buttons;
 mod gpu;
-mod debugger;
+mod instructions;
+mod registers;
 
-//use std::time::Duration;
+use buttons::Buttons;
 
-use sdl2;
-use sdl2::event::Event;
-use sdl2::keyboard::Keycode;
+use std::time::Duration;
 
-pub struct Keys {
-    row_1: u8,
-    row_2: u8,
-}
-
-impl Keys {
-    pub fn new_keys() -> Keys {
-        Keys { row_1: 0xF, row_2: 0xF }
-    }
-
-    fn key_down(&mut self, key: Keycode) {
-        match key {
-            Keycode::Down => self.row_1 &= 0b11110111,
-            Keycode::Up => self.row_1 &= 0b11111011,
-            Keycode::Left => self.row_1 &= 0b11111101,
-            Keycode::Right => self.row_1 &= 0b11111110,
-            Keycode::Return => self.row_2 &= 0b11110111, // Start Button
-            Keycode::Space => self.row_2 &= 0b11111011, // Select Button
-            Keycode::B => self.row_2 &= 0b11111101,
-            Keycode::A => self.row_2 &= 0b11111110,
-            _ => (),
-        };
-    }
-
-    fn key_up(&mut self, key: Keycode) {
-        match key {
-            Keycode::Down => self.row_1 |= 0b1000,
-            Keycode::Up => self.row_1 |= 0b100,
-            Keycode::Left => self.row_1 |= 0b10,
-            Keycode::Right => self.row_1 |= 0b1,
-            Keycode::Return => self.row_2 |= 0b1000, // Start Button
-            Keycode::Space => self.row_2 |= 0b100, // Select Button
-            Keycode::B => self.row_2 |= 0b10,
-            Keycode::A => self.row_2 |= 0b1,
-            _ => (),
-        };
-    }
-
-    pub fn update_keys(&mut self, event: sdl2::event::Event) {
-        match event {
-            Event::KeyDown { keycode: Some(val), .. } => self.key_down(val),
-            Event::KeyUp { keycode: Some(val), .. } => self.key_up(val),
-            _ => (),
-        };
-    }
-
-    pub fn update_register(&self, bus: &mut bus::Bus) {
-        let row = (bus.fetch_byte(0xFF00) & 0b110000) >> 4;
-        if row & 1 == 0 { // 4 upper bits are set to 1 to keep from reading more values
-            bus.set_byte(0xFF00, (self.row_1 & 0xF) | 0b11110000); // update register with direction keys values
-        } else if row & 0b10 == 0 {
-            bus.set_byte(0xFF00, (self.row_2 & 0xF) | 0b11110000);
-        }
-    }
-}
+use canvas::Canvas;
+use minifb::{Key, Scale, ScaleMode, Window, WindowOptions};
 
 fn main() {
-    let x_size: u32 = 160;
-    let y_size: u32 = 144;
-    let scale: f32 = 2.0;
+    let x_size: usize = 160;
+    let y_size: usize = 144;
+    let _scale: f32 = 2.0;
 
     let mut bus: bus::Bus = bus::Bus::new_bus(&String::from("roms/Tetris.GB"));
     //let mut bus: bus::Bus = bus::Bus::new_bus(&String::from("roms/11-op a,(hl).gb"));
     let mut cpu = cpu::CPU::new_cpu();
-    let mut gpu = gpu::GPU::new_gpu();
-    let mut keys = Keys::new_keys();
+    let mut gpu = gpu::GPU::new();
+    let mut keys = Buttons::new();
 
-    let mut debugger = debugger::Debugger::new_debugger();
+    // let mut debugger = debugger::Debugger::new_debugger();
     //debugger.set_paused(true);
-    let debug = false;
+    //let _debug = false;
 
-    let sdl_context = sdl2::init().unwrap();
-    let video_subsystem = sdl_context.video().unwrap();
-    let mut event_pump = sdl_context.event_pump().expect("Failed to generate event pump !");
+    let mut canvas = Canvas::new(x_size, y_size);
 
-    let window = video_subsystem.window("GB Emulator", (scale as u32) * x_size, (scale as u32) * y_size)
-        .position_centered()
-        .build()
-        .unwrap();
+    let mut window = Window::new(
+        "GB Emulator",
+        x_size,
+        y_size,
+        WindowOptions {
+            borderless: false,
+            title: true,
+            resize: false,
+            scale: Scale::X4,
+            scale_mode: ScaleMode::Stretch,
+            topmost: false,
+            transparency: false,
+            none: false,
+        },
+    )
+    .unwrap_or_else(|err| {
+        panic!("Couldn't create window: {}", err);
+    });
 
-    let mut canvas = window.into_canvas().build().unwrap();
-    canvas.set_draw_color(sdl2::pixels::Color::RGB(255, 255, 255));
-    canvas.clear();
-    canvas.present();
-    canvas.set_scale(scale, scale).unwrap();
+    window.limit_update_rate(Some(Duration::from_micros(16600)));
 
-    'main_loop: loop {
-        for event in event_pump.poll_iter() {
-            match event {
-                Event::Quit { .. } => break 'main_loop,
-                Event::KeyDown { keycode: Some(Keycode::Escape), .. } => break 'main_loop,
-                Event::KeyDown { keycode: Some(Keycode::F1), .. } => debugger.set_paused(true),
-                _ => keys.update_keys(event),
-            };
-        }
-        if debug == true {
-            debugger.tick(&mut cpu, &mut bus, &mut gpu, &mut keys, &mut canvas);
-        } else {
-            keys.update_register(&mut bus);
-            gpu.tick(&mut bus, &mut canvas);
-            cpu.tick(&mut bus);
-        }
+    while window.is_open() && !window.is_key_down(Key::Escape) {
+        keys.update_keys(&window);
+        keys.update_register(&mut bus);
+        gpu.tick(&mut bus, &mut canvas, &mut window);
+        cpu.tick(&mut bus);
+
+        window
+            .update_with_buffer(&canvas[..], x_size, y_size)
+            .unwrap();
     }
+
+    //'main_loop: loop {
+    //for event in event_pump.poll_iter() {
+    //match event {
+    //Event::Quit { .. } => break 'main_loop,
+    //Event::KeyDown {
+    //keycode: Some(Keycode::Escape),
+    //..
+    //} => break 'main_loop,
+    //Event::KeyDown {
+    //keycode: Some(Keycode::F1),
+    //..
+    //} => debugger.set_paused(true),
+    //_ => keys.update_keys(event),
+    //};
+    //}
+    //if debug == true {
+    //debugger.tick(&mut cpu, &mut bus, &mut gpu, &mut keys, &mut canvas);
+    //} else {
+    //keys.update_register(&mut bus);
+    //gpu.tick(&mut bus, &mut canvas);
+    //cpu.tick(&mut bus);
+    //}
+    //}
 }
