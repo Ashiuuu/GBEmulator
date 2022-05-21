@@ -3,36 +3,9 @@ pub struct Register {
     pub high: u8,
 }
 
-#[derive(Clone, Copy)]
-pub enum RegisterPart {
-    Low,
-    High,
-    Both,
-}
-
 impl Register {
     pub fn new() -> Self {
         Register { low: 0, high: 0 }
-    }
-
-    pub fn get_part(&self, part: RegisterPart) -> u8 {
-        match part {
-            RegisterPart::Low => self.low,
-            RegisterPart::High => self.high,
-            RegisterPart::Both => {
-                panic!("Got RegisterPart::Both in Register.get_part, which shouldn't happen")
-            }
-        }
-    }
-
-    pub fn set_part(&mut self, part: RegisterPart, data: u8) {
-        match part {
-            RegisterPart::Low => self.low = data,
-            RegisterPart::High => self.high = data,
-            RegisterPart::Both => {
-                panic!("Got RegisterPart::Both in Register.set_part, which shouldn't happen")
-            }
-        }
     }
 
     pub fn get_combined(&self) -> u16 {
@@ -78,26 +51,6 @@ impl AFRegister {
     pub fn set_word(&mut self, data: u16) {
         self.set_low((data & 0xFF) as u8);
         self.set_high(((data & 0xFF00) >> 8) as u8);
-    }
-
-    pub fn get_part(&self, part: RegisterPart) -> u8 {
-        match part {
-            RegisterPart::Low => self.flags.to_byte(),
-            RegisterPart::High => self.a,
-            RegisterPart::Both => {
-                panic!("Got RegisterPart::Both in AFRegister.set_part, which shouldn't happen")
-            }
-        }
-    }
-
-    pub fn set_part(&mut self, part: RegisterPart, data: u8) {
-        match part {
-            RegisterPart::Low => self.flags.from_byte(data),
-            RegisterPart::High => self.a = data,
-            RegisterPart::Both => {
-                panic!("Got RegisterPart::Both in AFRegister.set_part, which shouldn't happen")
-            }
-        }
     }
 
     pub fn get_combined(&self) -> u16 {

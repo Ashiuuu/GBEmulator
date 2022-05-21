@@ -5,10 +5,9 @@ mod cpu;
 // mod debugger;
 mod buttons;
 mod gpu;
-mod instructions;
-mod registers;
 
 use buttons::Buttons;
+use cpu::cpu::*;
 
 use std::time::Duration;
 
@@ -22,7 +21,7 @@ fn main() {
 
     let mut bus: bus::Bus = bus::Bus::new_bus(&String::from("roms/Tetris.GB"));
     //let mut bus: bus::Bus = bus::Bus::new_bus(&String::from("roms/11-op a,(hl).gb"));
-    let mut cpu = cpu::CPU::new_cpu();
+    let mut cpu = CPU::new_cpu();
     let mut gpu = gpu::GPU::new();
     let mut keys = Buttons::new();
 

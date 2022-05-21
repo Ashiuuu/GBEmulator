@@ -1,8 +1,9 @@
 use derive_more::Display;
 
+use super::instructions::*;
+use super::registers::*;
+
 use crate::bus::Bus;
-use crate::instructions::Instruction;
-use crate::registers::*;
 
 struct InterruptFlags {
     vblank: bool,
@@ -49,22 +50,34 @@ impl InterruptFlags {
 #[derive(Debug, Display, Clone, Copy)]
 pub enum Registers {
     AF,
+    A,
     BC,
+    B,
+    C,
     DE,
+    D,
+    E,
     HL,
+    H,
+    L,
     SP,
-    PC,
 }
 
 impl Registers {
     pub fn as_str(&self) -> &str {
         match self {
-            AF => "AF",
-            BC => "BC",
-            DE => "DE",
-            HL => "HL",
-            SP => "SP",
-            PC => "PC",
+            Self::AF => "AF",
+            Self::A => "A",
+            Self::BC => "BC",
+            Self::B => "B",
+            Self::C => "C",
+            Self::DE => "DE",
+            Self::D => "D",
+            Self::E => "E",
+            Self::HL => "HL",
+            Self::H => "H",
+            Self::L => "L",
+            Self::SP => "SP",
         }
     }
 }
@@ -100,44 +113,66 @@ impl CPU {
 
     pub fn get_register_word(&self, reg: Registers) -> u16 {
         match reg {
+            Registers::AF => self.af.get_combined(),
             Registers::BC => self.bc.get_combined(),
             Registers::DE => self.de.get_combined(),
             Registers::HL => self.hl.get_combined(),
-            Registers::AF => self.af.get_combined(),
             Registers::SP => self.sp,
-            Registers::PC => self.pc,
+            _ => panic!(
+                "Trying to access word sized data on byte sized register {}",
+                reg
+            ),
         }
     }
 
-    pub fn get_register_byte(&self, reg: Registers, part: RegisterPart) -> u8 {
+    pub fn get_register_byte(&self, reg: Registers) -> u8 {
         match reg {
-            Registers::BC => self.bc.get_part(part),
-            Registers::DE => self.de.get_part(part),
-            Registers::HL => self.hl.get_part(part),
-            Registers::AF => self.af.get_part(part),
-            _ => panic!("Invalid register for get_register_byte: {}", reg),
+            Registers::A => self.af.a,
+            Registers::B => self.bc.low,
+            Registers::C => self.bc.high,
+            Registers::D => self.de.low,
+            Registers::E => self.de.high,
+            Registers::H => self.hl.low,
+            Registers::L => self.hl.high,
+            _ => panic!(
+                "Trying to access byte sized data on word sized register {}",
+                reg
+            ),
         }
     }
 
-    pub fn set_half_register(&mut self, reg: Registers, part: RegisterPart, data: u8) {
+    pub fn set_half_register(&mut self, reg: Registers, data: u8) {
         match reg {
-            Registers::BC => self.bc.set_part(part, data),
-            Registers::DE => self.de.set_part(part, data),
-            Registers::HL => self.hl.set_part(part, data),
-            Registers::AF => self.af.set_part(part, data),
-            _ => panic!("Invalid register for set_half_register: {}", reg),
+            Registers::A => self.af.a = data,
+            Registers::B => self.bc.low = data,
+            Registers::C => self.bc.high = data,
+            Registers::D => self.de.low = data,
+            Registers::E => self.de.high = data,
+            Registers::H => self.hl.low = data,
+            Registers::L => self.hl.high = data,
+            _ => panic!(
+                "Trying to set byte sized data in word sized register {}",
+                reg
+            ),
         }
     }
 
     pub fn set_register(&mut self, reg: Registers, data: u16) {
         match reg {
+            Registers::AF => self.af.set_word(data),
             Registers::BC => self.bc.set_word(data),
             Registers::DE => self.de.set_word(data),
             Registers::HL => self.hl.set_word(data),
-            Registers::AF => self.af.set_word(data),
             Registers::SP => self.sp = data,
-            Registers::PC => self.pc = data,
+            _ => panic!(
+                "Trying to set word sized data in byte sized register {}",
+                reg
+            ),
         }
+    }
+
+    pub fn get_flag(&self, flag: char) -> bool {
+        self.af.flags.get(flag)
     }
 
     pub fn tick(&mut self, bus: &mut Bus) {
@@ -200,7 +235,7 @@ impl CPU {
         bus.set_word(self.sp, data);
     }
 
-    pub fn pop_word_from_stack(&mut self, bus: &mut Bus) -> u16 {
+    pub fn pop_word_from_stack(&mut self, bus: &Bus) -> u16 {
         let data = bus.fetch_word(self.sp);
         self.sp += 2;
         data
