@@ -6,3 +6,4 @@ Cargo.lock
 *.c
 *.py
 *.zip
+*.swp
