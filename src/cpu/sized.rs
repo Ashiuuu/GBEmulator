@@ -13,6 +13,24 @@ impl Sized {
             Sized::Word(_) => 2,
         }
     }
+
+    pub fn is_value_zero(&self) -> bool {
+        match self {
+            Sized::Byte(value) => value == &0,
+            Sized::Word(value) => value == &0,
+            Sized::Zero => panic!("[is_value_zero] Sized::Zero has no internal value!"),
+        }
+    }
+
+    pub fn check_value_for_half_carry(&self) -> bool {
+        match self {
+            Sized::Byte(value) => value & 0b1111 == 0,
+            Sized::Word(value) => value & 0b11111111 == 0,
+            Sized::Zero => {
+                panic!("[check_value_for_half_carry] Sized::Zero has no internal value!")
+            }
+        }
+    }
 }
 
 impl From<u8> for Sized {

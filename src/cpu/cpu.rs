@@ -175,6 +175,18 @@ impl CPU {
         self.af.flags.get(flag)
     }
 
+    pub fn set_flag(&mut self, flag: char) {
+        self.af.flags.set(flag)
+    }
+
+    pub fn clear_flag(&mut self, flag: char) {
+        self.af.flags.clear(flag)
+    }
+
+    pub fn update_flag(&mut self, flag: char, value: bool) {
+        self.af.flags.update(flag, value)
+    }
+
     pub fn tick(&mut self, bus: &mut Bus) {
         // execute a tick of the CPU
         /*let timer = bus.fetch_byte(0xFF04); // timer register to be incremented
@@ -189,7 +201,8 @@ impl CPU {
 
     fn execute_instruction(&mut self, bus: &mut Bus) {
         // fetch and execute instruction at program counter
-        let instruction = Instruction::fetch_new(bus, self.pc);
+        let instruction = Instruction::fetch_new(bus, self);
+        println!("{:#06x}:  {}", self.pc, instruction);
         self.clock_cycles_to_go += instruction.execute(bus, self);
 
         // interrupts

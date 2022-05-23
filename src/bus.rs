@@ -98,7 +98,7 @@ impl Bus {
 
     pub fn set_byte(&mut self, address: u16, data: u8) {
         match address {
-            0x0000..=0x3FFF => {},
+            0x0000..=0x3FFF => {}
             0x4000..=0x7FFF => panic!("ROM banks not supported !"), // ROM bank 1..N in cartridge
             0x8000..=0x9FFF => self.vram.set_byte(address, data),
             0xA000..=0xBFFF => self.external_ram.set_byte(address, data),
@@ -106,7 +106,7 @@ impl Bus {
             0xD000..=0xDFFF => self.wram2.set_byte(address, data),
             0xE000..=0xFDFF => self.wram1.set_byte(address, data),
             0xFE00..=0xFE9F => self.oam.set_byte(address, data),
-            0xFEA0..=0xFEFF => {}, //panic!("Address {:#x} is not usable !", address),
+            0xFEA0..=0xFEFF => {} //panic!("Address {:#x} is not usable !", address),
             0xFF00..=0xFF7F => self.io.set_byte(address, data),
             0xFF80..=0xFFFE => self.high_ram.set_byte(address, data),
             0xFFFF => self.interrupt_enable_register = data,

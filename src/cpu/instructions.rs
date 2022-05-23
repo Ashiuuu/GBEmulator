@@ -14,6 +14,11 @@ pub enum Operation {
     Jmp(Condition),
     Pop,
 
+    IncByte,
+    IncWord,
+
+    CPL,
+
     Illegal,
 }
 
@@ -31,6 +36,9 @@ impl Operation {
             Self::LD => source,
             Self::Jmp(cond) => jmp(cpu, source, cond),
             Self::Pop => pop(bus, cpu),
+            Self::CPL => cpl(cpu),
+            Self::IncByte => inc(cpu, source, true),
+            Self::IncWord => inc(cpu, source, false),
 
             Self::Illegal => panic!("Illegal instruction reached"),
             _ => unimplemented!(),
@@ -52,6 +60,8 @@ impl Display for Operation {
                     Condition::NoCarry => "JNC",
                 },
                 Self::Pop => "POP",
+                Self::CPL => "CPL",
+                Self::IncByte | Self::IncWord => "INC",
 
                 Self::Illegal => "Illegal",
             }
@@ -67,6 +77,7 @@ pub enum Condition {
 }
 
 pub struct Instruction {
+    opcode: u8,
     op: Operation,
     source: Target,
     dest: Target,
@@ -75,13 +86,14 @@ pub struct Instruction {
 }
 
 impl Instruction {
-    pub fn fetch_new(bus: &Bus, pc: u16) -> Self {
-        Self::from_opcode(bus.fetch_byte(pc))
+    pub fn fetch_new(bus: &Bus, cpu: &CPU) -> Self {
+        Self::from_opcode(bus.fetch_byte(cpu.pc))
     }
 
     // Execute an instruction. Returns the number of clock cycles to wait
     pub fn execute(self, bus: &mut Bus, cpu: &mut CPU) -> u8 {
-        let mut instruction_length = self.op_byte_len;
+        cpu.pc += self.op_byte_len;
+        let mut instruction_length = 0;
         let source = self.source.fetch(bus, cpu);
         instruction_length += source.number_of_bytes();
 
@@ -98,8 +110,9 @@ impl Instruction {
 
     fn from_opcode(opcode: u8) -> Self {
         use Registers::*;
-        match opcode {
+        let mut result = match opcode {
             0x00 => Instruction {
+                opcode: 0,
                 op: Operation::Nop,
                 source: Target::None,
                 dest: Target::None,
@@ -112,12 +125,33 @@ impl Instruction {
             0x21 => Self::ld_d16(HL),
             0x31 => Self::ld_d16(SP),
 
+            0x06 => Self::ld_d8_imm(B),
+            0x0E => Self::ld_d8_imm(C),
+            0x16 => Self::ld_d8_imm(D),
+            0x1E => Self::ld_d8_imm(E),
+            0x26 => Self::ld_d8_imm(H),
+            0x2E => Self::ld_d8_imm(L),
+
             0x40..=0x47 => Self::ld_d8_reg_to_reg_match(B, opcode),
             0x48..=0x4F => Self::ld_d8_reg_to_reg_match(C, opcode),
             0x50..=0x57 => Self::ld_d8_reg_to_reg_match(D, opcode),
             0x58..=0x5F => Self::ld_d8_reg_to_reg_match(E, opcode),
             0x60..=0x67 => Self::ld_d8_reg_to_reg_match(H, opcode),
             0x68..=0x6F => Self::ld_d8_reg_to_reg_match(L, opcode),
+
+            0x03 => Self::inc_reg16(BC),
+            0x13 => Self::inc_reg16(DE),
+            0x23 => Self::inc_reg16(HL),
+            0x33 => Self::inc_reg16(SP),
+
+            0x04 => Self::inc_reg8(B),
+            0x0C => Self::inc_reg8(C),
+            0x14 => Self::inc_reg8(D),
+            0x1C => Self::inc_reg8(E),
+            0x24 => Self::inc_reg8(H),
+            0x2C => Self::inc_reg8(L),
+
+            0x2F => Self::cpl(),
 
             0xC1 => Self::pop(BC),
             0xD1 => Self::pop(DE),
@@ -128,13 +162,17 @@ impl Instruction {
             0xC3 => Self::jmp(Condition::None),
             0xD2 => Self::jmp(Condition::NoCarry),
 
-            _ => panic!("Opcode non implemented: {:#02x}", opcode),
-        }
+            _ => panic!("Opcode non implemented: {:#04x}", opcode),
+        };
+
+        result.opcode = opcode;
+        result
     }
 
     // OPCODE HELPERS
     fn ld_d16(reg: Registers) -> Self {
         Instruction {
+            opcode: 0,
             op: Operation::LD,
             source: Target::ImmediateWord,
             dest: Target::Register(reg),
@@ -161,6 +199,7 @@ impl Instruction {
 
     fn ld_d8_reg_to_reg(source: Registers, dest: Registers) -> Self {
         Instruction {
+            opcode: 0,
             op: Operation::LD,
             source: Target::HalfRegister(source),
             dest: Target::HalfRegister(dest),
@@ -171,6 +210,7 @@ impl Instruction {
 
     fn ld_d8_from_hl_ptr(dest: Registers) -> Self {
         Instruction {
+            opcode: 0,
             op: Operation::LD,
             source: Target::IndirectRegister(Registers::HL),
             dest: Target::HalfRegister(dest),
@@ -179,8 +219,20 @@ impl Instruction {
         }
     }
 
+    fn ld_d8_imm(dest: Registers) -> Self {
+        Instruction {
+            opcode: 0,
+            op: Operation::LD,
+            source: Target::ImmediateByte,
+            dest: Target::HalfRegister(dest),
+            clock_cycles: 8,
+            op_byte_len: 1,
+        }
+    }
+
     fn jmp(condition: Condition) -> Self {
         Instruction {
+            opcode: 0,
             op: Operation::Jmp(condition),
             source: Target::ImmediateWord,
             dest: Target::None,
@@ -191,6 +243,7 @@ impl Instruction {
 
     fn pop(dest: Registers) -> Self {
         Instruction {
+            opcode: 0,
             op: Operation::Pop,
             source: Target::None,
             dest: Target::Register(dest),
@@ -198,17 +251,55 @@ impl Instruction {
             op_byte_len: 1,
         }
     }
+
+    fn cpl() -> Self {
+        Instruction {
+            opcode: 0,
+            op: Operation::CPL,
+            source: Target::None,
+            dest: Target::None,
+            clock_cycles: 4,
+            op_byte_len: 1,
+        }
+    }
+
+    fn inc_reg16(reg: Registers) -> Self {
+        Instruction {
+            opcode: 0,
+            op: Operation::IncWord,
+            source: Target::Register(reg),
+            dest: Target::Register(reg),
+            clock_cycles: 8,
+            op_byte_len: 1,
+        }
+    }
+
+    fn inc_reg8(reg: Registers) -> Self {
+        Instruction {
+            opcode: 0,
+            op: Operation::IncByte,
+            source: Target::Register(reg),
+            dest: Target::Register(reg),
+            clock_cycles: 4,
+            op_byte_len: 1,
+        }
+    }
 }
 
 impl Display for Instruction {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        write!(f, "{} {} {}", self.op, self.dest, self.source)
+        write!(
+            f,
+            "[{:#04x}] {} {} {}",
+            self.opcode, self.op, self.dest, self.source
+        )
     }
 }
 
 impl Default for Instruction {
     fn default() -> Self {
         Instruction {
+            opcode: 0,
             op: Operation::Illegal,
             source: Target::None,
             dest: Target::None,
@@ -232,4 +323,28 @@ fn jmp(cpu: &mut CPU, source: Sized, condition: &Condition) -> Sized {
 
 fn pop(bus: &Bus, cpu: &mut CPU) -> Sized {
     Sized::Word(cpu.pop_word_from_stack(bus))
+}
+
+fn cpl(cpu: &mut CPU) -> Sized {
+    cpu.af.a = !cpu.af.a;
+    cpu.set_flag('h');
+    cpu.set_flag('n');
+
+    Sized::Zero
+}
+
+fn inc(cpu: &mut CPU, source: Sized, should_set_flags: bool) -> Sized {
+    let result = match source {
+        Sized::Word(value) => Sized::Word(value.wrapping_add(1)),
+        Sized::Byte(value) => Sized::Byte(value.wrapping_add(1)),
+        Sized::Zero => panic!("Calling inc on zero sized value"),
+    };
+
+    if should_set_flags {
+        cpu.clear_flag('n');
+        cpu.update_flag('z', result.is_value_zero());
+        cpu.update_flag('h', result.check_value_for_half_carry());
+    }
+
+    result
 }
